@@ -133,7 +133,9 @@ function AccountRow({ account, index }: AccountRowProps) {
         </Stack>
       </Grid>
     );
-  }  const renderRankDisplay = (rank: Account['rank']) => {
+  }  
+  
+  const renderRankDisplay = (rank: Account['rank']) => {
     if (!rank) {
       return (
         <Tooltip content="Never logged in">

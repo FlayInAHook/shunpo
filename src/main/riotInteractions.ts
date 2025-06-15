@@ -108,7 +108,9 @@ async function requestRank() {
       division: soloQueue.division,
       lp: soloQueue.leaguePoints,
       wins: soloQueue.wins,
-      losses: soloQueue.losses
+      losses: soloQueue.losses,
+      previousSeasonEndTier: soloQueue.previousSeasonEndTier,
+      previousSeasonEndDivision: soloQueue.previousSeasonEndDivision,
     };
   }
 

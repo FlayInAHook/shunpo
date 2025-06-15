@@ -11,6 +11,8 @@ export type Account = {
     lp: number;
     wins: number;
     losses: number;
+    previousSeasonEndTier?: string;
+    previousSeasonEndDivision?: string;
   } | null;
 };
 
