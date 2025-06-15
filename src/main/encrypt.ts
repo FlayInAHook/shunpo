@@ -7,6 +7,13 @@ ipcMain.handle("encryptString", (_, args) => {
 
 ipcMain.handle("decryptString", (_, args) => {
     console.log("decry", args)
-    return safeStorage.decryptString(Buffer.from(args, 'binary')).toString();
+    let decryptedBuffer;
+    try {
+      decryptedBuffer = safeStorage.decryptString(Buffer.from(args, 'binary'));
+    } catch (error) {
+      console.error("Decryption failed:", error, "result" + args);
+      return args;
+    }
+    return decryptedBuffer.toString();
 });
 

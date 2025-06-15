@@ -1,0 +1,26 @@
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+  }
+  
+  *::-webkit-scrollbar-track {
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--chakra-colors-riot-500) !important;
+    border-radius: 10px!important;
+  }
+  
+  
+  ::-webkit-scrollbar-track-piece:start {
+    background: transparent url('images/backgrounds/scrollbar.png') repeat-y !important;
+  }
+  
+  ::-webkit-scrollbar-track-piece:end {
+    background: transparent url('images/backgrounds/scrollbar.png') repeat-y !important;
+  }
+  
+  ::-webkit-scrollbar-corner{
+    border-radius: 10px;
+  }

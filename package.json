@@ -20,7 +20,7 @@
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
     "prebuildOverlay": "cd node_modules/electron-overlay-window && npm run prebuild && bun remove tsc && npm run build",
-    "generate:theme": "bunx chakra typegen ./src/renderer/src/theme.ts"
+    "generate:theme": "bunx chakra typegen ./src/renderer/src/theme/theme.ts"
   },
   "dependencies": {
     "@chakra-ui/cli": "^3.21.0",
