@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Grid,
+  Image,
   Input,
   Stack,
   Text
@@ -21,6 +22,7 @@ import TIER_MASTER from "../assets/tier/master.png";
 import TIER_PLATINUM from "../assets/tier/platinum.png";
 import TIER_SILVER from "../assets/tier/silver.png";
 import TIER_UNRANKED from "../assets/tier/unranked.png";
+import { Tooltip } from "./ui/tooltip";
 
 interface AccountRowProps {
   account: Account;
@@ -131,20 +133,75 @@ function AccountRow({ account, index }: AccountRowProps) {
         </Stack>
       </Grid>
     );
-  }
-  
-  const formatRank = (rank: Account['rank']): string => {
-    if (!rank) return "never logged in";
-    if (rank.division == "NA") return `${rank.tier} (${rank.lp} LP)`;
-    return `${rank.tier} ${rank.division} (${rank.lp} LP)`;
-  };
+  }  const renderRankDisplay = (rank: Account['rank']) => {
+    if (!rank) {
+      return (
+        <Tooltip content="Never logged in">
+          <Box position="relative" display="inline-block">
+            <Image 
+              src={getTierImage("UNRANKED")} 
+              alt="Unranked"
+              width="40px"
+              height="40px"
+            />
+            <Text
+              position="absolute"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+              fontSize="xs"
+              fontWeight="bold"
+              color="white"
+              textShadow="1px 1px 2px rgba(0,0,0,0.8)"
+              pointerEvents="none"
+            >
+              --
+            </Text>
+          </Box>
+        </Tooltip>
+      );
+    }
 
+    const tooltipContent = rank.division === "NA" 
+      ? `${rank.tier} - ${rank.lp} LP (${rank.wins}W/${rank.losses}L)`
+      : `${rank.tier} ${rank.division} - ${rank.lp} LP (${rank.wins}W/${rank.losses}L)`;
+
+    const divisionText = rank.division === "NA" ? "" : rank.division;
+
+    return (
+      <Tooltip content={tooltipContent}>
+        <Box position="relative" display="inline-block">
+          <Image 
+            src={getTierImage(rank.tier)} 
+            alt={rank.tier}
+            width="40px"
+            height="40px"
+          />
+          {divisionText && (
+            <Text
+              position="absolute"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+              fontSize="xs"
+              fontWeight="bold"
+              color="white"
+              textShadow="1px 1px 2px rgba(0,0,0,0.8)"
+              pointerEvents="none"
+            >
+              {divisionText}
+            </Text>
+          )}
+        </Box>
+      </Tooltip>
+    );
+  };
   return (
     <Grid templateColumns="1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" alignItems="center">
       <Text fontWeight="medium">{account.summonerName || account.username}</Text>
-      <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
-        {formatRank(account.rank)}
-      </Text>
+      <Box display="flex" justifyContent="center">
+        {renderRankDisplay(account.rank)}
+      </Box>
       <Stack direction="row" gap="1">
         <Button
           size="sm"

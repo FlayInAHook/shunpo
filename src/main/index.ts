@@ -70,7 +70,7 @@ function createWindow(): void {
   }
   makeDemoInteractive()
 
-  OverlayController.attachByTitle(
+  /*OverlayController.attachByTitle(
   mainWindow!,
   'Riot Client',
   { 
@@ -80,7 +80,7 @@ function createWindow(): void {
       left: 70,
     },
     selfHandleClickable: true
-  })
+  })*/
   mainWindow!.setIgnoreMouseEvents(false);
 }
 

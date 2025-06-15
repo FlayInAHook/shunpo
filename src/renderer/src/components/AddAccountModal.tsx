@@ -44,6 +44,7 @@ function AddAccountModal() {
         <Button
           colorPalette="riot"
           size="lg"
+          mb="1"
         >
           <FaPlus />
           Add Account
@@ -96,7 +97,8 @@ function AddAccountModal() {
               >
                 Cancel
               </Button>
-            </Stack>          </Dialog.Footer>
+            </Stack>          
+          </Dialog.Footer>
         </Dialog.Content>
       </Dialog.Positioner>
     </Dialog.Root>
