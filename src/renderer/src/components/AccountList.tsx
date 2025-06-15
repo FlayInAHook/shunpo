@@ -7,9 +7,26 @@ import {
   Stack,
   Text
 } from "@chakra-ui/react";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { FaEdit, FaPlay, FaSave, FaTimes, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlay, FaSave, FaSort, FaSortAmountDown, FaTimes, FaTrash } from "react-icons/fa";
 import { Account, accountsAtom } from "../Datastorage";
 import TIER_BRONZE from "../assets/tier/bronze.png";
 import TIER_CHALLENGER from "../assets/tier/challenger.png";
@@ -24,9 +41,46 @@ import TIER_SILVER from "../assets/tier/silver.png";
 import TIER_UNRANKED from "../assets/tier/unranked.png";
 import { Tooltip } from "./ui/tooltip";
 
+// Rank ordering for sorting (higher values = higher rank)
+const RANK_ORDER = {
+  'CHALLENGER': 12,
+  'GRANDMASTER': 11,
+  'MASTER': 10,
+  'DIAMOND': 9,
+  'EMERALD': 8,
+  'PLATINUM': 7,
+  'GOLD': 6,
+  'SILVER': 5,
+  'BRONZE': 4,
+  'IRON': 3,
+  'UNRANKED': 2,
+  'NONE': 1 // For accounts with no rank data
+};
+
+const DIVISION_ORDER = {
+  'I': 4,
+  'II': 3,
+  'III': 2,
+  'IV': 1,
+  'NA': 0
+};
+
+function getRankSortValue(account: Account): number {
+  if (!account.rank) return RANK_ORDER.NONE;
+  
+  const tierValue = RANK_ORDER[account.rank.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
+  const divisionValue = DIVISION_ORDER[account.rank.division as keyof typeof DIVISION_ORDER] || 0;
+  const lpValue = account.rank.lp || 0;
+  
+  // Combine tier, division, and LP for precise sorting
+  // Multiply by 10000 for tier, 1000 for division, and add LP
+  return (tierValue * 10000) + (divisionValue * 1000) + lpValue;
+}
+
 interface AccountRowProps {
   account: Account;
   index: number;
+  id: string;
 }
 
 function getTierImage(tier: string): string {
@@ -58,7 +112,39 @@ function getTierImage(tier: string): string {
   }
 }
 
-function AccountRow({ account, index }: AccountRowProps) {
+function SortableAccountRow({ account, index, id }: AccountRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <AccountRow 
+        account={account} 
+        index={index} 
+        id={id}
+        dragHandleProps={listeners}
+      />
+    </div>
+  );
+}
+
+interface AccountRowInternalProps extends AccountRowProps {
+  dragHandleProps?: any;
+}
+
+function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps) {
   const [accounts, setAccounts] = useAtom(accountsAtom);
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
@@ -95,10 +181,25 @@ function AccountRow({ account, index }: AccountRowProps) {
   const handleDelete = () => {
     const updatedAccounts = accounts.filter((_, i) => i !== index);
     setAccounts(updatedAccounts);
-  };
+  };  
+  
   if (isEditing) {
     return (
-      <Grid templateColumns="1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md">
+      <Grid templateColumns="auto 1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md">
+        <Box
+          {...dragHandleProps}
+          cursor="grab"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          width="20px"
+          height="20px"
+          borderRadius="md"
+          _hover={{ bg: "gray.200", _dark: { bg: "gray.600" } }}
+          title="Drag to reorder"
+        >
+          <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>⋮⋮</Text>
+        </Box>
         <Input
           value={editUsername}
           onChange={(e) => setEditUsername(e.target.value)}
@@ -197,9 +298,22 @@ function AccountRow({ account, index }: AccountRowProps) {
         </Box>
       </Tooltip>
     );
-  };
-  return (
-    <Grid templateColumns="1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" alignItems="center">
+  };  return (
+    <Grid templateColumns="auto 1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" alignItems="center">
+      <Box
+        {...dragHandleProps}
+        cursor="grab"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        width="20px"
+        height="20px"
+        borderRadius="md"
+        _hover={{ bg: "gray.200", _dark: { bg: "gray.600" } }}
+        title="Drag to reorder"
+      >
+        <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>⋮⋮</Text>
+      </Box>
       <Text fontWeight="medium">{account.summonerName || account.username}</Text>
       <Box display="flex" justifyContent="center">
         {renderRankDisplay(account.rank)}
@@ -215,8 +329,7 @@ function AccountRow({ account, index }: AccountRowProps) {
         </Button>
         <Button
           size="sm"
-          variant="outline"
-          onClick={handleEdit}
+          variant="outline"          onClick={handleEdit}
           title="Edit"
         >
           <FaEdit />
@@ -237,6 +350,39 @@ function AccountRow({ account, index }: AccountRowProps) {
 
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
+  const [sortByRank, setSortByRank] = useState(false);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Auto-sort by rank when enabled
+  const sortedAccounts = sortByRank 
+    ? [...accounts].sort((a, b) => getRankSortValue(b) - getRankSortValue(a))
+    : accounts;
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = accounts.findIndex(account => `${account.username}-${accounts.indexOf(account)}` === active.id);
+      const newIndex = accounts.findIndex(account => `${account.username}-${accounts.indexOf(account)}` === over?.id);
+
+      setAccounts(arrayMove(accounts, oldIndex, newIndex));
+    }
+  };
+
+  const toggleSortByRank = () => {
+    if (!sortByRank) {
+      // When enabling sort by rank, actually reorder the accounts array
+      const rankSorted = [...accounts].sort((a, b) => getRankSortValue(b) - getRankSortValue(a));
+      setAccounts(rankSorted);
+    }
+    setSortByRank(!sortByRank);
+  };
   useEffect(() => {
     // Listen for riot data updates
     const handleRiotDataUpdate = (_event: any, data: any) => {
@@ -277,12 +423,38 @@ function AccountList() {
       </Box>
     );
   }
-
   return (
     <Stack gap="2">
-      {accounts.map((account, index) => (
-        <AccountRow key={`${account.username}-${index}`} account={account} index={index} />
-      ))}
+      <Box display="flex" justifyContent="flex-end" mb="2">        <Button
+          size="sm"
+          variant="outline"
+          onClick={toggleSortByRank}
+          colorPalette={sortByRank ? "riot" : "gray"}
+        >
+          {sortByRank ? <FaSortAmountDown /> : <FaSort />}
+          {sortByRank ? "Sorted by Rank" : "Sort by Rank"}
+        </Button>
+      </Box>
+      
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={sortedAccounts.map((account, index) => `${account.username}-${index}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          {sortedAccounts.map((account, index) => (
+            <SortableAccountRow 
+              key={`${account.username}-${index}`} 
+              account={account} 
+              index={accounts.indexOf(account)} // Use original index for updates
+              id={`${account.username}-${index}`} 
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
     </Stack>
   );
 }

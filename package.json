@@ -26,6 +26,8 @@
     "@chakra-ui/cli": "^3.21.0",
     "@chakra-ui/react": "^3.21.0",
     "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@emotion/react": "^11.14.0",
