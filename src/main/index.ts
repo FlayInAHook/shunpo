@@ -1,8 +1,10 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { OverlayController } from 'electron-overlay-window';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
-export const {OVERLAY_WINDOW_OPTS, OverlayController} = require('electron-overlay-window');
+import "./encrypt.ts";
+//import "./riotInteractions.ts";
 
 let mainWindow: BrowserWindow | null = null
 function createWindow(): void {
@@ -11,7 +13,7 @@ function createWindow(): void {
     width: 900,
     height: 670,
     show: false,
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -37,7 +39,7 @@ function createWindow(): void {
   }
   makeDemoInteractive()
 
-  OverlayController.attachByTitle(
+  /*OverlayController.attachByTitle(
   mainWindow!,
   'Riot Client',
   { 
@@ -47,7 +49,7 @@ function createWindow(): void {
       left: 70,
     },
     selfHandleClickable: true
-  })
+  })*/
   mainWindow!.setIgnoreMouseEvents(false);
 }
 
@@ -66,7 +68,9 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', (evet, username: string, password: string) => {
+    console.log('Received ping from renderer process');
+  })
 
   createWindow()
 
