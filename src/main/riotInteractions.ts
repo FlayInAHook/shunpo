@@ -44,6 +44,12 @@ function startConnectionMonitoring() {
         // Send data to renderer
         const mainWindow = BrowserWindow.getAllWindows()[0];
         if (mainWindow) {
+          console.log("Sending Riot data to renderer:", {
+            username: lastUsername,
+            summonerName,
+            rankInfo,
+            connected: true
+          });
           mainWindow.webContents.send("riotDataUpdate", {
             username: lastUsername,
             summonerName,
