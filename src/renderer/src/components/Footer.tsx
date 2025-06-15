@@ -1,5 +1,4 @@
 import { Box, Stack, Text } from "@chakra-ui/react";
-import Versions from "./Versions";
 
 function Footer() {
   return (
@@ -20,7 +19,6 @@ function Footer() {
             Built with Electron + React
           </Text>
         </Stack>
-        <Versions />
       </Stack>
     </Box>
   );

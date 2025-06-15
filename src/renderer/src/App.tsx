@@ -11,11 +11,11 @@ function App(): React.JSX.Element {
 
   const { toggleColorMode, colorMode } = useColorMode()
   return (
-    <Box minHeight="100vh" display="flex" flexDirection="column">
+    <Box h="100vh" display="flex" flexDirection="column">
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
       <Header />
-      
-      <Container maxW="6xl" flex="1" p="6">
+
+      <Container maxW="6xl" h="calc(100vh - 64px)" flex="1" p="6" overflow="scroll">
         <Stack gap="6" height="100%">
           <Box flex="1">
             <AccountList />

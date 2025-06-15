@@ -10,10 +10,50 @@ import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { FaEdit, FaPlay, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { Account, accountsAtom } from "../Datastorage";
+import TIER_BRONZE from "../assets/tier/bronze.png";
+import TIER_CHALLENGER from "../assets/tier/challenger.png";
+import TIER_DIAMOND from "../assets/tier/diamond.png";
+import TIER_EMERALD from "../assets/tier/emerald.png";
+import TIER_GOLD from "../assets/tier/gold.png";
+import TIER_GRANDMASTER from "../assets/tier/grandmaster.png";
+import TIER_IRON from "../assets/tier/iron.png";
+import TIER_MASTER from "../assets/tier/master.png";
+import TIER_PLATINUM from "../assets/tier/platinum.png";
+import TIER_SILVER from "../assets/tier/silver.png";
+import TIER_UNRANKED from "../assets/tier/unranked.png";
 
 interface AccountRowProps {
   account: Account;
   index: number;
+}
+
+function getTierImage(tier: string): string {
+  switch (tier) {
+    case "UNRANKED":
+      return TIER_UNRANKED;
+    case "IRON":
+      return TIER_IRON;
+    case "BRONZE":
+      return TIER_BRONZE;
+    case "SILVER":
+      return TIER_SILVER;
+    case "GOLD":
+      return TIER_GOLD;
+    case "PLATINUM":
+      return TIER_PLATINUM;
+    case "EMERALD":
+      return TIER_EMERALD;
+    case "DIAMOND":
+      return TIER_DIAMOND;
+    case "MASTER":
+      return TIER_MASTER;
+    case "GRANDMASTER":
+      return TIER_GRANDMASTER;
+    case "CHALLENGER":
+      return TIER_CHALLENGER;
+    default:
+      return TIER_UNRANKED; // Fallback to unranked
+  }
 }
 
 function AccountRow({ account, index }: AccountRowProps) {
@@ -92,6 +132,7 @@ function AccountRow({ account, index }: AccountRowProps) {
       </Grid>
     );
   }
+  
   const formatRank = (rank: Account['rank']): string => {
     if (!rank) return "never logged in";
     if (rank.division == "NA") return `${rank.tier} (${rank.lp} LP)`;
