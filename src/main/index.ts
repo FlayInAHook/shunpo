@@ -1,11 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { join } from 'path';
+import icon from '../../resources/icon.png?asset';
+export const {OVERLAY_WINDOW_OPTS, OverlayController} = require('electron-overlay-window');
 
+let mainWindow: BrowserWindow | null = null
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+   mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -18,7 +20,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow!.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -33,6 +35,20 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  makeDemoInteractive()
+
+  OverlayController.attachByTitle(
+  mainWindow!,
+  'Riot Client',
+  { 
+    hasTitleBarOnMac: true,
+    marginPercent: {
+      top: 25,
+      left: 70,
+    },
+    selfHandleClickable: true
+  })
+  mainWindow!.setIgnoreMouseEvents(false);
 }
 
 // This method will be called when Electron has finished
@@ -60,6 +76,39 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+
+
+const toggleMouseKey = 'CmdOrCtrl + J'
+const toggleShowKey = 'CmdOrCtrl + K'
+
+
+let isInteractable = false; 
+function makeDemoInteractive () {
+  
+
+  function toggleOverlayState () {
+    if (isInteractable) {
+      isInteractable = false
+      OverlayController.focusTarget()
+      mainWindow!.webContents.send('focus-change', false)
+    } else {
+      isInteractable = true
+      OverlayController.activateOverlay()
+      mainWindow!.webContents.send('focus-change', true)
+    }
+  }
+
+  mainWindow!.on('blur', () => {
+    isInteractable = false
+    mainWindow!.webContents.send('focus-change', false)
+  })
+
+  //globalShortcut.register(toggleMouseKey, toggleOverlayState)
+  //globalShortcut.register("CmdOrCtrl + L", () => logIntoLeague("", ""))
+
+}
+
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

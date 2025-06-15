@@ -18,7 +18,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "prebuildOverlay": "cd node_modules/electron-overlay-window && npm run prebuild && bun remove tsc && npm run build"
   },
   "dependencies": {
     "@chakra-ui/cli": "^3.21.0",
@@ -26,6 +27,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@emotion/react": "^11.14.0",
+    "electron-overlay-window": "git+https://github.com/FlayInAHook/electron-overlay-window-margin.git",
     "electron-updater": "^6.3.9",
     "next-themes": "^0.4.6",
     "react-icons": "^5.5.0"
@@ -48,7 +50,11 @@
     "prettier": "^3.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tsc": "^2.0.4",
     "typescript": "^5.8.3",
     "vite": "^6.2.6"
-  }
+  },
+  "trustedDependencies": [
+    "electron-overlay-window"
+  ]
 }
