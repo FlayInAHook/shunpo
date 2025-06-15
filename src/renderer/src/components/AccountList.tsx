@@ -12,6 +12,7 @@ import {
   DndContext,
   DragEndEvent,
   KeyboardSensor,
+  Modifier,
   PointerSensor,
   useSensor,
   useSensors
@@ -348,6 +349,14 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
   );
 }
 
+// Modifier to restrict dragging to x-axis only
+const restrictToHorizontalAxis: Modifier = ({transform}) => {
+  return {
+    ...transform,
+    x: 0,
+  };
+};
+
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
   const [sortByRank, setSortByRank] = useState(false);
@@ -435,11 +444,11 @@ function AccountList() {
           {sortByRank ? "Sorted by Rank" : "Sort by Rank"}
         </Button>
       </Box>
-      
-      <DndContext
+        <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        modifiers={[restrictToHorizontalAxis]}
       >
         <SortableContext
           items={sortedAccounts.map((account, index) => `${account.username}-${index}`)}

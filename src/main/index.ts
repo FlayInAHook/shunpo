@@ -12,6 +12,7 @@ function createWindow(): void {
   // Check if menubar and titlebar should be auto-hidden
   const shouldAutoHideMenuBar = !is.dev || process.env.BUILD_TEST === 'true';
   const shouldHideTitleBar = !is.dev || process.env.BUILD_TEST === 'true';
+  const shouldAttachOverlay = !is.dev || process.env.BUILD_TEST === 'true';
   
   // Create the browser window.
    mainWindow = new BrowserWindow({
@@ -70,17 +71,20 @@ function createWindow(): void {
   }
   makeDemoInteractive()
 
-  /*OverlayController.attachByTitle(
-  mainWindow!,
-  'Riot Client',
-  { 
-    hasTitleBarOnMac: true,
-    marginPercent: {
-      top: 25,
-      left: 70,
-    },
-    selfHandleClickable: true
-  })*/
+  if (shouldAttachOverlay) {
+    OverlayController.attachByTitle(
+      mainWindow!,
+      'Riot Client',
+      {
+        hasTitleBarOnMac: true,
+        marginPercent: {
+          top: 25,
+          left: 70,
+        },
+        selfHandleClickable: true
+      }
+    )
+  }
   mainWindow!.setIgnoreMouseEvents(false);
 }
 
