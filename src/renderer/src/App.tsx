@@ -1,7 +1,6 @@
 import { Box, Container, Stack } from '@chakra-ui/react'
 import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
-import Footer from './components/Footer'
 import Header from './components/Header'
 import { useColorMode } from './components/ui/color-mode'
 import { Toaster } from './components/ui/toaster'
@@ -51,7 +50,7 @@ function App(): React.JSX.Element {
       </Container>
       
       <Box ref={footerRef}>
-        <Footer />
+        {/*<Footer />*/}
       </Box>
     </Box>
   )
