@@ -34,7 +34,6 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
 
   function toggleColumn(column: string) {
     if (enabledColumns.includes(column as any)) {
-      // Don't allow removing the last column
       if (enabledColumns.length > 1) {
         setEnabledColumns(enabledColumns.filter(col => col !== column));
       }
@@ -133,19 +132,29 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
             </Popover.Body>
           </Popover.Content>
         </Popover.Positioner>
-      </Popover.Root>
-
+      </Popover.Root>      
       <Select
         isMulti
+        size="sm"
         options={championOptions()}
         value={championOptions().filter(option => selectedChampions.includes(option.value))}
         onChange={handleSelectChange}
         menuPortalTarget={document.body}
+        chakraStyles={{
+          container: (provided) => ({
+            ...provided,
+            marginX: "5",
+          }),
+          control: (provided) => ({
+            ...provided,
+            minHeight: "36px", // Match the height of sm buttons
+            height: "36px",
+          }),
+        }}
         //components={{ DropdownIndicator: CustomDropdownIndicator }}
         //styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
       />
 
-      {/* Sort Controls */}
       <Button
         size="sm"
         variant="outline"

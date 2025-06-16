@@ -1,19 +1,19 @@
 import { Box, Stack, Text } from "@chakra-ui/react";
 import {
-    closestCenter,
-    DndContext,
-    DragEndEvent,
-    KeyboardSensor,
-    Modifier,
-    PointerSensor,
-    useSensor,
-    useSensors,
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  Modifier,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
@@ -122,8 +122,8 @@ function AccountList() {
 
   const sortedAccounts = getSortedAccounts();
   const filteredAccounts = sortedAccounts.filter(account =>
-    selectedChampions.length === 0 || account.ownedChampions?.some(champion =>
-      selectedChampions.includes(champion)
+    selectedChampions.length === 0 || selectedChampions.every(champion =>
+      account.ownedChampions?.includes(champion)
     )
   );
   return (
