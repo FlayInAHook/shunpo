@@ -191,7 +191,7 @@ function createTray(): void {
     { 
       label: 'Quit', 
       click: () => {
-        app.quit()
+        app.exit()
       }
     }
   ])

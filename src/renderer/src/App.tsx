@@ -1,7 +1,6 @@
 import { Box, Container, Stack } from '@chakra-ui/react'
 import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
-import AddAccountModal from './components/AddAccountModal'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import { useColorMode } from './components/ui/color-mode'
@@ -43,15 +42,10 @@ function App(): React.JSX.Element {
         <Header />
       </Box>
 
-      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">
-        <Stack gap="6" height="100%">
+      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">        <Stack gap="6" height="100%">
           <Box flex="1">
             <AccountList />
-          </Box>            
-          <Box textAlign="center">
-            <AddAccountModal />
-          </Box>
-        </Stack>
+          </Box>        </Stack>
       </Container>
       
       <Box ref={footerRef}>

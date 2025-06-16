@@ -19,6 +19,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { accountsAtom, selectedChampionsAtom } from "../Datastorage";
 import { AccountListControls, getFlexQueueSortValue, getSoloQueueSortValue, SortableAccountRow } from "./account";
+import AddAccountInline from "./AddAccountInline";
 
 const restrictToHorizontalAxis: Modifier = ({ transform }) => {
   return {
@@ -103,17 +104,19 @@ function AccountList() {
       window.electron.ipcRenderer.removeAllListeners("riotDataUpdate");
     };
   }, [accounts, setAccounts]);
-
   if (accounts.length === 0) {
     return (
-      <Box textAlign="center" py="8">
-        <Text fontSize="lg" color="gray.500" _dark={{ color: "gray.400" }}>
-          No accounts added yet
-        </Text>
-        <Text fontSize="sm" color="gray.400" _dark={{ color: "gray.500" }}>
-          Click the + button below to add your first account
-        </Text>
-      </Box>
+      <Stack gap="4">
+        <Box textAlign="center" py="8">
+          <Text fontSize="lg" color="gray.500" _dark={{ color: "gray.400" }}>
+            No accounts added yet
+          </Text>
+          <Text fontSize="sm" color="gray.400" _dark={{ color: "gray.500" }}>
+            Add your first account below
+          </Text>
+        </Box>
+        <AddAccountInline />
+      </Stack>
     );
   }
 
@@ -123,7 +126,6 @@ function AccountList() {
       selectedChampions.includes(champion)
     )
   );
-
   return (
     <Stack gap="2">
       <AccountListControls
@@ -154,6 +156,8 @@ function AccountList() {
           ))}
         </SortableContext>
       </DndContext>
+      
+      <AddAccountInline />
     </Stack>
   );
 }
