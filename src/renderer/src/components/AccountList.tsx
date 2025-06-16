@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Grid,
-  Image,
-  Input,
-  Stack,
-  Text
-} from "@chakra-ui/react";
+import { Box, Button, Grid, Image, Input, Stack, Text } from "@chakra-ui/react";
 import {
   closestCenter,
   DndContext,
@@ -15,19 +7,27 @@ import {
   Modifier,
   PointerSensor,
   useSensor,
-  useSensors
-} from '@dnd-kit/core';
+  useSensors,
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { FaEdit, FaPlay, FaSave, FaSort, FaSortAmountDown, FaTimes, FaTrash } from "react-icons/fa";
+import {
+  FaEdit,
+  FaPlay,
+  FaSave,
+  FaSort,
+  FaSortAmountDown,
+  FaTimes,
+  FaTrash,
+} from "react-icons/fa";
 import { Account, accountsAtom } from "../Datastorage";
 import TIER_BRONZE from "../assets/tier/bronze.png";
 import TIER_CHALLENGER from "../assets/tier/challenger.png";
@@ -42,40 +42,53 @@ import TIER_SILVER from "../assets/tier/silver.png";
 import TIER_UNRANKED from "../assets/tier/unranked.png";
 import { Tooltip } from "./ui/tooltip";
 
-// Rank ordering for sorting (higher values = higher rank)
 const RANK_ORDER = {
-  'CHALLENGER': 12,
-  'GRANDMASTER': 11,
-  'MASTER': 10,
-  'DIAMOND': 9,
-  'EMERALD': 8,
-  'PLATINUM': 7,
-  'GOLD': 6,
-  'SILVER': 5,
-  'BRONZE': 4,
-  'IRON': 3,
-  'UNRANKED': 2,
-  'NONE': 1 // For accounts with no rank data
+  CHALLENGER: 12,
+  GRANDMASTER: 11,
+  MASTER: 10,
+  DIAMOND: 9,
+  EMERALD: 8,
+  PLATINUM: 7,
+  GOLD: 6,
+  SILVER: 5,
+  BRONZE: 4,
+  IRON: 3,
+  UNRANKED: 2,
+  NONE: 1,
 };
 
 const DIVISION_ORDER = {
-  'I': 4,
-  'II': 3,
-  'III': 2,
-  'IV': 1,
-  'NA': 0
+  I: 4,
+  II: 3,
+  III: 2,
+  IV: 1,
+  NA: 0,
 };
 
-function getRankSortValue(account: Account): number {
-  if (!account.rank) return RANK_ORDER.NONE;
-  
-  const tierValue = RANK_ORDER[account.rank.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
-  const divisionValue = DIVISION_ORDER[account.rank.division as keyof typeof DIVISION_ORDER] || 0;
-  const lpValue = account.rank.lp || 0;
-  
-  // Combine tier, division, and LP for precise sorting
-  // Multiply by 10000 for tier, 1000 for division, and add LP
-  return (tierValue * 10000) + (divisionValue * 1000) + lpValue;
+function getSoloQueueSortValue(account: Account): number {
+  if (!account.rank?.soloQueue) return RANK_ORDER.NONE;
+
+  const rankData = account.rank.soloQueue;
+  const tierValue =
+    RANK_ORDER[rankData.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
+  const divisionValue =
+    DIVISION_ORDER[rankData.division as keyof typeof DIVISION_ORDER] || 0;
+  const lpValue = rankData.leaguePoints || 0;
+
+  return tierValue * 10000 + divisionValue * 1000 + lpValue;
+}
+
+function getFlexQueueSortValue(account: Account): number {
+  if (!account.rank?.flexQueue) return RANK_ORDER.NONE;
+
+  const rankData = account.rank.flexQueue;
+  const tierValue =
+    RANK_ORDER[rankData.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
+  const divisionValue =
+    DIVISION_ORDER[rankData.division as keyof typeof DIVISION_ORDER] || 0;
+  const lpValue = rankData.leaguePoints || 0;
+
+  return tierValue * 10000 + divisionValue * 1000 + lpValue;
 }
 
 interface AccountRowProps {
@@ -109,7 +122,7 @@ function getTierImage(tier: string): string {
     case "CHALLENGER":
       return TIER_CHALLENGER;
     default:
-      return TIER_UNRANKED; // Fallback to unranked
+      return TIER_UNRANKED;
   }
 }
 
@@ -131,9 +144,9 @@ function SortableAccountRow({ account, index, id }: AccountRowProps) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <AccountRow 
-        account={account} 
-        index={index} 
+      <AccountRow
+        account={account}
+        index={index}
         id={id}
         dragHandleProps={listeners}
       />
@@ -145,14 +158,22 @@ interface AccountRowInternalProps extends AccountRowProps {
   dragHandleProps?: any;
 }
 
-function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps) {
+function AccountRow({
+  account,
+  index,
+  dragHandleProps,
+}: AccountRowInternalProps) {
   const [accounts, setAccounts] = useAtom(accountsAtom);
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
   const [editPassword, setEditPassword] = useState(account.password);
 
   const handleLogin = () => {
-    window.electron.ipcRenderer.send("riotLogin", account.username, account.password);
+    window.electron.ipcRenderer.send(
+      "riotLogin",
+      account.username,
+      account.password
+    );
   };
 
   const handleEdit = () => {
@@ -166,7 +187,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
       summonerName: account.summonerName,
       rank: account.rank,
     };
-    
+
     const updatedAccounts = [...accounts];
     updatedAccounts[index] = updatedAccount;
     setAccounts(updatedAccounts);
@@ -182,11 +203,18 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
   const handleDelete = () => {
     const updatedAccounts = accounts.filter((_, i) => i !== index);
     setAccounts(updatedAccounts);
-  };  
-  
+  };
+
   if (isEditing) {
     return (
-      <Grid templateColumns="auto 1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md">
+      <Grid
+        templateColumns="auto 1fr 1fr 1fr"
+        gap="3"
+        p="3"
+        bg="gray.50"
+        _dark={{ bg: "gray.700" }}
+        borderRadius="md"
+      >
         <Box
           {...dragHandleProps}
           cursor="grab"
@@ -199,7 +227,9 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
           _hover={{ bg: "gray.200", _dark: { bg: "gray.600" } }}
           title="Drag to reorder"
         >
-          <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>⋮⋮</Text>
+          <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>
+            ⋮⋮
+          </Text>
         </Box>
         <Input
           value={editUsername}
@@ -225,25 +255,20 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
           >
             <FaSave />
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCancel}
-          >
+          <Button size="sm" variant="outline" onClick={handleCancel}>
             <FaTimes />
           </Button>
         </Stack>
       </Grid>
     );
-  }  
-  
-  const renderRankDisplay = (rank: Account['rank']) => {
-    if (!rank) {
+  }
+  const renderRankDisplay = (rank: Account["rank"]) => {
+    if (!rank || (!rank.soloQueue && !rank.flexQueue)) {
       return (
         <Tooltip content="Never logged in">
           <Box position="relative" display="inline-block">
-            <Image 
-              src={getTierImage("UNRANKED")} 
+            <Image
+              src={getTierImage("UNRANKED")}
               alt="Unranked"
               width="40px"
               height="40px"
@@ -266,22 +291,19 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
       );
     }
 
-    const tooltipContent = rank.division === "NA" 
-      ? `${rank.tier} - ${rank.lp} LP (${rank.wins}W/${rank.losses}L)`
-      : `${rank.tier} ${rank.division} - ${rank.lp} LP (${rank.wins}W/${rank.losses}L)`;
-
-    const divisionText = rank.division === "NA" ? "" : rank.division;
-
-    return (
-      <Tooltip content={tooltipContent}>
-        <Box position="relative" display="inline-block">
-          <Image 
-            src={getTierImage(rank.tier)} 
-            alt={rank.tier}
-            width="40px"
-            height="40px"
-          />
-          {divisionText && (
+    const renderSingleRank = (
+      rankData: typeof rank.soloQueue,
+      queueType: string
+    ) => {
+      if (!rankData) {
+        return (
+          <Box position="relative" display="inline-block">
+            <Image
+              src={getTierImage("UNRANKED")}
+              alt="Unranked"
+              width="40px"
+              height="40px"
+            />
             <Text
               position="absolute"
               top="50%"
@@ -293,14 +315,94 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
               textShadow="1px 1px 2px rgba(0,0,0,0.8)"
               pointerEvents="none"
             >
-              {divisionText}
+              --
             </Text>
-          )}
-        </Box>
-      </Tooltip>
+          </Box>
+        );
+      }
+
+      const isUnranked = rankData.tier === "UNRANKED";
+
+      let tooltipContent = "";
+      if (isUnranked && rankData.previousSeasonEndTier) {
+        const prevSeason =
+          rankData.previousSeasonEndDivision !== "NA"
+            ? `${rankData.previousSeasonEndTier} ${rankData.previousSeasonEndDivision}`
+            : rankData.previousSeasonEndTier;
+        tooltipContent = `${queueType}: Unranked (Last season: ${prevSeason})`;
+      } else if (isUnranked) {
+        tooltipContent = `${queueType}: Unranked`;
+      } else {
+        const division = rankData.division === "NA" ? "" : ` ${rankData.division}`;
+        tooltipContent = `${queueType}: ${rankData.tier}${division} - ${rankData.leaguePoints} LP (${rankData.wins}W/${rankData.losses}L)`;
+      }
+
+      let displayText;
+      if (isUnranked && rankData.previousSeasonEndTier) {
+        displayText =
+          rankData.previousSeasonEndDivision !== "NA"
+            ? rankData.previousSeasonEndDivision
+            : rankData.previousSeasonEndTier.substring(0, 2);
+      } else {
+        displayText =
+          rankData.division === "NA"
+            ? rankData.leaguePoints
+            : rankData.division;
+      }
+
+      const textColor =
+        isUnranked && rankData.previousSeasonEndTier ? "yellow.400" : "white";
+
+      return (
+        <Tooltip content={tooltipContent}>
+          <Box position="relative" display="inline-block">
+            <Image
+              src={getTierImage(
+                isUnranked && rankData.previousSeasonEndTier
+                  ? rankData.previousSeasonEndTier
+                  : rankData.tier
+              )}
+              alt={rankData.tier}
+              width="40px"
+              height="40px"
+            />
+            {displayText && (
+              <Text
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
+                fontSize="xs"
+                fontWeight="bold"
+                color={textColor}
+                textShadow="1px 1px 2px rgba(0,0,0,0.8)"
+                pointerEvents="none"
+              >
+                {displayText}
+              </Text>
+            )}
+          </Box>
+        </Tooltip>
+      );
+    };
+    return (
+      <Stack direction="row" gap="2" alignItems="center">
+        {renderSingleRank(rank.soloQueue, "Solo/Duo")}
+        {renderSingleRank(rank.flexQueue, "Flex")}
+      </Stack>
     );
-  };  return (
-    <Grid templateColumns="auto 1fr 1fr 1fr" gap="3" p="3" bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" alignItems="center">
+  };
+
+  return (
+    <Grid
+      templateColumns="auto 1fr 1fr 1fr"
+      gap="3"
+      p="3"
+      bg="gray.50"
+      _dark={{ bg: "gray.700" }}
+      borderRadius="md"
+      alignItems="center"
+    >
       <Box
         {...dragHandleProps}
         cursor="grab"
@@ -313,9 +415,13 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
         _hover={{ bg: "gray.200", _dark: { bg: "gray.600" } }}
         title="Drag to reorder"
       >
-        <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>⋮⋮</Text>
+        <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>
+          ⋮⋮
+        </Text>
       </Box>
-      <Text fontWeight="medium">{account.summonerName || account.username}</Text>
+      <Text fontWeight="medium">
+        {account.summonerName || account.username}
+      </Text>
       <Box display="flex" justifyContent="center">
         {renderRankDisplay(account.rank)}
       </Box>
@@ -328,11 +434,8 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
         >
           <FaPlay />
         </Button>
-        <Button
-          size="sm"
-          variant="outline"          onClick={handleEdit}
-          title="Edit"
-        >
+        {" "}
+        <Button size="sm" variant="outline" onClick={handleEdit} title="Edit">
           <FaEdit />
         </Button>
         <Button
@@ -349,8 +452,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowInternalProps
   );
 }
 
-// Modifier to restrict dragging to x-axis only
-const restrictToHorizontalAxis: Modifier = ({transform}) => {
+const restrictToHorizontalAxis: Modifier = ({ transform }) => {
   return {
     ...transform,
     x: 0,
@@ -359,8 +461,8 @@ const restrictToHorizontalAxis: Modifier = ({transform}) => {
 
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
-  const [sortByRank, setSortByRank] = useState(false);
-  
+  const [sortMode, setSortMode] = useState<"none" | "solo" | "flex">("none");
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -368,43 +470,51 @@ function AccountList() {
     })
   );
 
-  // Auto-sort by rank when enabled
-  const sortedAccounts = sortByRank 
-    ? [...accounts].sort((a, b) => getRankSortValue(b) - getRankSortValue(a))
-    : accounts;
+  const sortedAccounts =
+    sortMode === "solo"
+      ? [...accounts].sort(
+          (a, b) => getSoloQueueSortValue(b) - getSoloQueueSortValue(a)
+        )
+      : sortMode === "flex"
+      ? [...accounts].sort(
+          (a, b) => getFlexQueueSortValue(b) - getFlexQueueSortValue(a)
+        )
+      : accounts;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = accounts.findIndex(account => `${account.username}-${accounts.indexOf(account)}` === active.id);
-      const newIndex = accounts.findIndex(account => `${account.username}-${accounts.indexOf(account)}` === over?.id);
+      const oldIndex = accounts.findIndex(
+        (account) =>
+          `${account.username}-${accounts.indexOf(account)}` === active.id
+      );
+      const newIndex = accounts.findIndex(
+        (account) =>
+          `${account.username}-${accounts.indexOf(account)}` === over?.id
+      );
 
       setAccounts(arrayMove(accounts, oldIndex, newIndex));
     }
   };
 
-  const toggleSortByRank = () => {
-    if (!sortByRank) {
-      // When enabling sort by rank, actually reorder the accounts array
-      const rankSorted = [...accounts].sort((a, b) => getRankSortValue(b) - getRankSortValue(a));
-      setAccounts(rankSorted);
-    }
-    setSortByRank(!sortByRank);
+  const toggleSortMode = () => {
+    const nextMode =
+      sortMode === "none" ? "solo" : sortMode === "solo" ? "flex" : "none";
+    setSortMode(nextMode);
   };
+
   useEffect(() => {
-    // Listen for riot data updates
     const handleRiotDataUpdate = (_event: any, data: any) => {
       console.log("Received Riot data update:", data);
-      
+
       if (data.username && data.connected) {
-        // Find and update the account with the matching username
-        const updatedAccounts = accounts.map(account => 
-          account.username === data.username 
+        const updatedAccounts = accounts.map((account) =>
+          account.username === data.username
             ? {
                 ...account,
                 summonerName: data.summonerName,
-                rank: data.rankInfo
+                rank: data.rankInfo,
               }
             : account
         );
@@ -413,8 +523,7 @@ function AccountList() {
     };
 
     window.electron.ipcRenderer.on("riotDataUpdate", handleRiotDataUpdate);
-    
-    // Cleanup
+
     return () => {
       window.electron.ipcRenderer.removeAllListeners("riotDataUpdate");
     };
@@ -434,32 +543,40 @@ function AccountList() {
   }
   return (
     <Stack gap="2">
-      <Box display="flex" justifyContent="flex-end" mb="2">        <Button
+      <Box display="flex" justifyContent="flex-end" mb="2">
+        <Button
           size="sm"
           variant="outline"
-          onClick={toggleSortByRank}
-          colorPalette={sortByRank ? "riot" : "gray"}
+          onClick={toggleSortMode}
+          colorPalette={sortMode !== "none" ? "riot" : "gray"}
         >
-          {sortByRank ? <FaSortAmountDown /> : <FaSort />}
-          {sortByRank ? "Sorted by Rank" : "Sort by Rank"}
+          {sortMode !== "none" ? <FaSortAmountDown /> : <FaSort />}
+          {sortMode === "solo"
+            ? "Sorted by Solo Queue"
+            : sortMode === "flex"
+            ? "Sorted by Flex Queue"
+            : "Sort by Rank"}
         </Button>
       </Box>
-        <DndContext
+      {" "}
+      <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
         modifiers={[restrictToHorizontalAxis]}
       >
         <SortableContext
-          items={sortedAccounts.map((account, index) => `${account.username}-${index}`)}
+          items={sortedAccounts.map(
+            (account, index) => `${account.username}-${index}`
+          )}
           strategy={verticalListSortingStrategy}
         >
           {sortedAccounts.map((account, index) => (
-            <SortableAccountRow 
-              key={`${account.username}-${index}`} 
-              account={account} 
-              index={accounts.indexOf(account)} // Use original index for updates
-              id={`${account.username}-${index}`} 
+            <SortableAccountRow
+              key={`${account.username}-${index}`}
+              account={account}
+              index={accounts.indexOf(account)}
+              id={`${account.username}-${index}`}
             />
           ))}
         </SortableContext>

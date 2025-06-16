@@ -14,15 +14,17 @@ ipcMain.on("riotLogin", (_, username: string, password: string) => {
       console.log('Found Edit controls:', controls);
       const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
       const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
-      const buttons = OverlayController.findButtonControls();
-      const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
+      setTimeout(() => {
+        const buttons = OverlayController.findButtonControls();
+        const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
 
-      console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
+        console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
+        
+        if (inputEditSuccess && inputEditSuccess2 && buttonClickSuccess) {
+          startConnectionMonitoring();
+        }
+      }, 100);
       
-      // Start monitoring connection after login attempt
-      if (inputEditSuccess && inputEditSuccess2 && buttonClickSuccess) {
-        startConnectionMonitoring();
-      }
     } catch (error) {
       console.error('Error in IPC ping handler:', error);
     }
@@ -39,21 +41,27 @@ function startConnectionMonitoring() {
       const isConnected = await connectToRiot();
       if (isConnected) {
         const summonerName = await requestSummonerName();
-        const rankInfo = await requestRank();
-        
+        const [soloQueue, flexQueue] = await requestRank();
+
         // Send data to renderer
         const mainWindow = BrowserWindow.getAllWindows()[0];
         if (mainWindow) {
           console.log("Sending Riot data to renderer:", {
             username: lastUsername,
             summonerName,
-            rankInfo,
+            rankInfo: {
+              soloQueue,
+              flexQueue
+            },
             connected: true
           });
           mainWindow.webContents.send("riotDataUpdate", {
             username: lastUsername,
             summonerName,
-            rankInfo,
+            rankInfo: {
+              soloQueue,
+              flexQueue
+            },
             connected: true
           });
         }
@@ -101,20 +109,9 @@ async function requestRank() {
   const response = await client.request("get", "/lol-ranked/v1/current-ranked-stats");
 
   const soloQueue = response.queues.find((queue) => queue.queueType === "RANKED_SOLO_5x5");
+  const flexQueue = response.queues.find((queue) => queue.queueType === "RANKED_FLEX_SR");
 
-  if (soloQueue) {
-    return {
-      tier: soloQueue.tier,
-      division: soloQueue.division,
-      lp: soloQueue.leaguePoints,
-      wins: soloQueue.wins,
-      losses: soloQueue.losses,
-      previousSeasonEndTier: soloQueue.previousSeasonEndTier,
-      previousSeasonEndDivision: soloQueue.previousSeasonEndDivision,
-    };
-  }
-
-  return null;
+  return [soloQueue, flexQueue];
 }
 
 

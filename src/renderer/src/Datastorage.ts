@@ -6,13 +6,24 @@ export type Account = {
   password: string;
   summonerName?: string;
   rank?: {
-    tier: string;
-    division: string;
-    lp: number;
-    wins: number;
-    losses: number;
-    previousSeasonEndTier?: string;
-    previousSeasonEndDivision?: string;
+    soloQueue?: {
+      tier: string;
+      division: string;
+      leaguePoints: number;
+      wins: number;
+      losses: number;
+      previousSeasonEndTier?: string;
+      previousSeasonEndDivision?: string;
+    } | null;
+    flexQueue?: {
+      tier: string;
+      division: string;
+      leaguePoints: number;
+      wins: number;
+      losses: number;
+      previousSeasonEndTier?: string;
+      previousSeasonEndDivision?: string;
+    } | null;
   } | null;
 };
 
