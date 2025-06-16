@@ -4,6 +4,7 @@ import AccountList from './components/AccountList'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import { useColorMode } from './components/ui/color-mode'
+import { Toaster } from './components/ui/toaster'
 import darkScrollbar from './theme/scrollbar.dark.css?inline'
 import lightScrollbar from './theme/scrollbar.light.css?inline'
 
@@ -37,6 +38,7 @@ function App(): React.JSX.Element {
   }, [headerRef, footerRef])
   return (
     <Box h="100vh" display="flex" flexDirection="column">
+      <Toaster />
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
       <Box ref={headerRef}>
         <Header />

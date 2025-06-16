@@ -151,18 +151,16 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
       </Stack>
     );
   }
-
   if (isEditing) {
     return (
       <Grid
-        templateColumns="auto 1fr 1fr auto"
+        templateColumns="1fr 1fr auto"
         gap="3"
         p="3"
         bg="gray.50"
         _dark={{ bg: "gray.700" }}
         borderRadius="md"
       >
-        {renderDragHandle()}
         <Input
           value={editUsername}
           onChange={(e) => setEditUsername(e.target.value)}

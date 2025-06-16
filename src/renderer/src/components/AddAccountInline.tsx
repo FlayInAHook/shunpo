@@ -3,6 +3,7 @@ import { useAtom } from "jotai";
 import { useState } from "react";
 import { FaPlus, FaSave, FaTimes } from "react-icons/fa";
 import { Account, accountsAtom } from "../Datastorage";
+import { toaster } from "./ui/toaster";
 
 function AddAccountInline() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
@@ -28,7 +29,9 @@ function AddAccountInline() {
     );
     
     if (existingAccount) {
-      setError("An account with this username already exists");
+      toaster.error({
+        title: "Account with this username already exists",
+      })
       return;
     }
 
@@ -53,7 +56,8 @@ function AddAccountInline() {
   };
   if (isAdding) {
     return (
-      <Box>        <Grid
+      <Box>        
+        <Grid
           templateColumns="1fr 1fr auto"
           gap="3"
           p="3"
@@ -62,6 +66,7 @@ function AddAccountInline() {
           borderRadius="md"
           border="2px"
           borderColor="gray.200"
+          mb="4"
         >
           <Input
             value={username}
