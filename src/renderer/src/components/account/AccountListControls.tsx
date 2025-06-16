@@ -1,7 +1,9 @@
 import { Box, Button, Popover, Stack } from "@chakra-ui/react";
-import { useAtom } from "jotai";
+import { Select } from "chakra-react-select";
+import { useAtom, useAtomValue } from "jotai";
+import { useCallback } from "react";
 import { FaCog, FaSort, FaSortAmountDown } from "react-icons/fa";
-import { enabledColumnsAtom } from "../../Datastorage";
+import { accountsAtom, enabledColumnsAtom, selectedChampionsAtom } from "../../Datastorage";
 
 interface AccountListControlsProps {
   sortMode: "none" | "solo" | "flex";
@@ -10,7 +12,9 @@ interface AccountListControlsProps {
 
 function AccountListControls({ sortMode, onToggleSortMode }: AccountListControlsProps) {
   const [enabledColumns, setEnabledColumns] = useAtom(enabledColumnsAtom);
-  
+  const accounts = useAtomValue(accountsAtom);
+  const [selectedChampions, setSelectedChampions] = useAtom(selectedChampionsAtom);
+
   const allColumns = ["summonerName", "rank", "isPhoneVerified", "ownedChampions"];
 
   function getColumnHeader(column: string) {
@@ -38,6 +42,61 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
       setEnabledColumns([...enabledColumns, column as any]);
     }
   }
+
+  const championOptions = useCallback(() => {
+    return accounts.reduce((acc, account) => {
+      if (account.ownedChampions) {
+        account.ownedChampions.forEach(champion => {
+          if (!acc.some(opt => opt.value === champion)) {
+            acc.push({ value: champion, label: champion });
+          }
+        });
+      }
+      return acc;
+    }, [] as { value: string; label: string }[]);
+  }, [accounts]);
+
+  function handleSelectChange(selectedOptions: any) {
+    const selectedValues = selectedOptions.map((option: any) => option.value);
+    setSelectedChampions(selectedValues);
+  }
+
+  /*function handleSelectAll() {
+    const allValues = championOptions().map((option) => option.value);
+    setSelectedChampions(allValues);
+  }
+
+  const CustomDropdownIndicator = (props: any) => {
+    const { innerProps, selectProps } = props;
+    return (
+      <HStack gap={1} pr={2} tabIndex={-1} zIndex={200} pointerEvents={"auto"} color={"gray.400"}>
+        <Text
+          as="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleSelectAll();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          fontSize="sm"
+          fontWeight="medium"
+          _hover={{ textDecoration: "underline" }}
+          mr={2}
+          pb={"2px"}
+        >
+          Select All
+        </Text>
+        {selectProps.components.DropdownIndicator && (
+          <div {...innerProps}>
+            {props.selectProps.menuIsOpen ? (
+              <MdKeyboardArrowUp size="1.25em" />
+            ) : (
+              <MdKeyboardArrowDown size="1.25em" />
+            )}
+          </div>
+        )}
+      </HStack>
+    );
+  };*/
 
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" mb="2">
@@ -75,6 +134,16 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
           </Popover.Content>
         </Popover.Positioner>
       </Popover.Root>
+
+      <Select
+        isMulti
+        options={championOptions()}
+        value={championOptions().filter(option => selectedChampions.includes(option.value))}
+        onChange={handleSelectChange}
+        menuPortalTarget={document.body}
+        //components={{ DropdownIndicator: CustomDropdownIndicator }}
+        //styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+      />
 
       {/* Sort Controls */}
       <Button

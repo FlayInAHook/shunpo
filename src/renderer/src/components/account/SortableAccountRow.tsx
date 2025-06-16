@@ -7,9 +7,10 @@ interface SortableAccountRowProps {
   account: Account;
   index: number;
   id: string;
+  disableDragHandle?: boolean;
 }
 
-function SortableAccountRow({ account, index, id }: SortableAccountRowProps) {
+function SortableAccountRow({ account, index, id, disableDragHandle = false }: SortableAccountRowProps) {
   const {
     attributes,
     listeners,
@@ -31,7 +32,7 @@ function SortableAccountRow({ account, index, id }: SortableAccountRowProps) {
         account={account}
         index={index}
         id={id}
-        dragHandleProps={listeners}
+        dragHandleProps={{...listeners, visibility: disableDragHandle? "hidden" : "visible"}}
       />
     </div>
   );

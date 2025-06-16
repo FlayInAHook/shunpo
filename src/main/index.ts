@@ -2,7 +2,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { OverlayController } from 'electron-overlay-window';
 import { join } from 'path';
-import icon from '../../resources/new_icon.png?asset';
+import icon from '../../resources/icon.png?asset';
 import "./encrypt.ts";
 import "./riotInteractions.ts";
 

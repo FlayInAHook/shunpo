@@ -61,3 +61,5 @@ export const accountsAtom = atom(accountsDefaultValue, (_get, set, newAccounts: 
 type ColumnTypes = "summonerName" | "rank" | "isPhoneVerified" | "ownedChampions";
 export const enabledColumnsAtom = atomWithStorage<ColumnTypes[]>("enabledColumns", ["summonerName", "rank"]);
 
+export const selectedChampionsAtom = atom<string[]>([]);
+

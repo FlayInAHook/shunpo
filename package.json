@@ -8,8 +8,8 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
-    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
-    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck:node": "bunx tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "bunx tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
@@ -32,6 +32,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@emotion/react": "^11.14.0",
     "@hasagi/core": "^0.6.3",
+    "chakra-react-select": "^6.1.0",
     "electron-overlay-window": "git+https://github.com/FlayInAHook/electron-overlay-window-margin.git",
     "electron-updater": "^6.3.9",
     "jotai": "^2.12.5",
@@ -56,7 +57,6 @@
     "prettier": "^3.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tsc": "^2.0.4",
     "typescript": "^5.8.3",
     "vite": "^6.2.6"
   },

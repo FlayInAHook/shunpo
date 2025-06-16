@@ -10,6 +10,7 @@ interface AccountRowProps {
   index: number;
   id: string;
   dragHandleProps?: any;
+  disableDragHandle?: boolean;
 }
 
 function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {

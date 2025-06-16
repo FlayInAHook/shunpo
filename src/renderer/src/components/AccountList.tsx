@@ -15,9 +15,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { accountsAtom } from "../Datastorage";
+import { accountsAtom, selectedChampionsAtom } from "../Datastorage";
 import { AccountListControls, getFlexQueueSortValue, getSoloQueueSortValue, SortableAccountRow } from "./account";
 
 const restrictToHorizontalAxis: Modifier = ({ transform }) => {
@@ -30,6 +30,7 @@ const restrictToHorizontalAxis: Modifier = ({ transform }) => {
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
   const [sortMode, setSortMode] = useState<"none" | "solo" | "flex">("none");
+  const selectedChampions = useAtomValue(selectedChampionsAtom);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -117,6 +118,11 @@ function AccountList() {
   }
 
   const sortedAccounts = getSortedAccounts();
+  const filteredAccounts = sortedAccounts.filter(account =>
+    selectedChampions.length === 0 || account.ownedChampions?.some(champion =>
+      selectedChampions.includes(champion)
+    )
+  );
 
   return (
     <Stack gap="2">
@@ -132,17 +138,18 @@ function AccountList() {
         modifiers={[restrictToHorizontalAxis]}
       >
         <SortableContext
-          items={sortedAccounts.map(
+          items={filteredAccounts.map(
             (account, index) => `${account.username}-${index}`
           )}
           strategy={verticalListSortingStrategy}
         >
-          {sortedAccounts.map((account, index) => (
+          {filteredAccounts.map((account, index) => (
             <SortableAccountRow
               key={`${account.username}-${index}`}
               account={account}
               index={accounts.indexOf(account)}
               id={`${account.username}-${index}`}
+              disableDragHandle={sortMode != "none" || selectedChampions.length > 0}
             />
           ))}
         </SortableContext>

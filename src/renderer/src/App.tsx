@@ -10,7 +10,7 @@ import lightScrollbar from './theme/scrollbar.light.css?inline'
 
 function App(): React.JSX.Element {
 
-  const { toggleColorMode, colorMode } = useColorMode()
+  const { colorMode } = useColorMode()
 
   const headerRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
