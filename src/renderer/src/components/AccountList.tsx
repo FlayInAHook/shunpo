@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Image, Input, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Grid, Image, Input, Popover, Stack, Text } from "@chakra-ui/react";
 import {
   closestCenter,
   DndContext,
@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import {
+  FaCog,
   FaEdit,
   FaPlay,
   FaSave,
@@ -28,7 +29,7 @@ import {
   FaTimes,
   FaTrash,
 } from "react-icons/fa";
-import { Account, accountsAtom } from "../Datastorage";
+import { Account, accountsAtom, enabledColumnsAtom } from "../Datastorage";
 import TIER_BRONZE from "../assets/tier/bronze.png";
 import TIER_CHALLENGER from "../assets/tier/challenger.png";
 import TIER_DIAMOND from "../assets/tier/diamond.png";
@@ -162,11 +163,17 @@ function AccountRow({
   account,
   index,
   dragHandleProps,
-}: AccountRowInternalProps) {
-  const [accounts, setAccounts] = useAtom(accountsAtom);
+}: AccountRowInternalProps) {  const [accounts, setAccounts] = useAtom(accountsAtom);
+  const [enabledColumns] = useAtom(enabledColumnsAtom);
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
   const [editPassword, setEditPassword] = useState(account.password);
+
+  const allColumns = ["summonerName", "rank", "isPhoneVerified", "ownedChampions"];
+  
+  const getOrderedEnabledColumns = () => {
+    return allColumns.filter(column => enabledColumns.includes(column as any));
+  };
 
   const handleLogin = () => {
     window.electron.ipcRenderer.send(
@@ -199,16 +206,52 @@ function AccountRow({
     setEditPassword(account.password);
     setIsEditing(false);
   };
-
   const handleDelete = () => {
     const updatedAccounts = accounts.filter((_, i) => i !== index);
     setAccounts(updatedAccounts);
   };
+  const renderColumnContent = (column: string) => {
+    switch (column) {      case "summonerName":
+        return (
+          <Box display="flex" justifyContent="center">
+            <Text fontWeight="medium">
+              {account.summonerName || account.username}
+            </Text>
+          </Box>
+        );
+      case "rank":
+        return renderRankDisplay(account.rank);
+      case "isPhoneVerified":
+        return (
+          <Box display="flex" justifyContent="center">
+            <Text
+              fontSize="sm"
+              color={account.isPhoneVerified ? "green.500" : "red.500"}
+              fontWeight="medium"
+            >
+              {account.isPhoneVerified ? "✓ Verified" : "✗ Not Verified"}
+            </Text>
+          </Box>
+        );
+      case "ownedChampions":
+        return (
+          <Box display="flex" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              {account.ownedChampions ? account.ownedChampions.length : 0} Champions
+            </Text>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
 
-  if (isEditing) {
+  const getGridColumns = () => {
+    return `auto ${enabledColumns.map(() => "1fr").join(" ")} auto`;
+  };  if (isEditing) {
     return (
       <Grid
-        templateColumns="auto 1fr 1fr 1fr"
+        templateColumns="auto 1fr 1fr auto"
         gap="3"
         p="3"
         bg="gray.50"
@@ -261,8 +304,7 @@ function AccountRow({
         </Stack>
       </Grid>
     );
-  }
-  const renderRankDisplay = (rank: Account["rank"]) => {
+  }const renderRankDisplay = (rank: Account["rank"], queueType?: "solo" | "flex") => {
     if (!rank || (!rank.soloQueue && !rank.flexQueue)) {
       return (
         <Tooltip content="Never logged in">
@@ -293,7 +335,7 @@ function AccountRow({
 
     const renderSingleRank = (
       rankData: typeof rank.soloQueue,
-      queueType: string
+      queueLabel: string
     ) => {
       if (!rankData) {
         return (
@@ -321,7 +363,8 @@ function AccountRow({
         );
       }
 
-      const isUnranked = rankData.tier === "UNRANKED";
+      const isUnranked = rankData.tier === "UNRANKED" || rankData.tier === "";
+      const isPreviousSeasonUnranked = rankData.previousSeasonEndTier === "UNRANKED" || rankData.previousSeasonEndTier === "";
 
       let tooltipContent = "";
       if (isUnranked && rankData.previousSeasonEndTier) {
@@ -329,16 +372,18 @@ function AccountRow({
           rankData.previousSeasonEndDivision !== "NA"
             ? `${rankData.previousSeasonEndTier} ${rankData.previousSeasonEndDivision}`
             : rankData.previousSeasonEndTier;
-        tooltipContent = `${queueType}: Unranked (Last season: ${prevSeason})`;
+        tooltipContent = `${queueLabel}: Unranked (Last season: ${prevSeason})`;
       } else if (isUnranked) {
-        tooltipContent = `${queueType}: Unranked`;
+        tooltipContent = `${queueLabel}: Unranked`;
       } else {
         const division = rankData.division === "NA" ? "" : ` ${rankData.division}`;
-        tooltipContent = `${queueType}: ${rankData.tier}${division} - ${rankData.leaguePoints} LP (${rankData.wins}W/${rankData.losses}L)`;
+        tooltipContent = `${queueLabel}: ${rankData.tier}${division} - ${rankData.leaguePoints} LP (${rankData.wins}W/${rankData.losses}L)`;
       }
 
       let displayText;
-      if (isUnranked && rankData.previousSeasonEndTier) {
+      if (isUnranked && isPreviousSeasonUnranked) {
+        displayText = "";
+      } else if (isUnranked && rankData.previousSeasonEndTier) {
         displayText =
           rankData.previousSeasonEndDivision !== "NA"
             ? rankData.previousSeasonEndDivision
@@ -366,25 +411,44 @@ function AccountRow({
               width="40px"
               height="40px"
             />
-            {displayText && (
-              <Text
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-                fontSize="xs"
-                fontWeight="bold"
-                color={textColor}
-                textShadow="1px 1px 2px rgba(0,0,0,0.8)"
-                pointerEvents="none"
-              >
-                {displayText}
-              </Text>
-            )}
+            
+            <Text
+              position="absolute"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+              fontSize="xs"
+              fontWeight="bold"
+              color={textColor}
+              textShadow="1px 1px 2px rgba(0,0,0,0.8)"
+              pointerEvents="none"
+            >
+              {displayText}
+            </Text>
+            
           </Box>
         </Tooltip>
       );
     };
+
+    // If a specific queue type is requested, show only that queue
+    if (queueType === "solo") {
+      return (
+        <Box display="flex" justifyContent="center">
+          {renderSingleRank(rank.soloQueue, "Solo/Duo")}
+        </Box>
+      );
+    }
+    
+    if (queueType === "flex") {
+      return (
+        <Box display="flex" justifyContent="center">
+          {renderSingleRank(rank.flexQueue, "Flex")}
+        </Box>
+      );
+    }
+
+    // Default: show both queues side by side
     return (
       <Stack direction="row" gap="2" alignItems="center">
         {renderSingleRank(rank.soloQueue, "Solo/Duo")}
@@ -392,10 +456,9 @@ function AccountRow({
       </Stack>
     );
   };
-
   return (
     <Grid
-      templateColumns="auto 1fr 1fr 1fr"
+      templateColumns={getGridColumns()}
       gap="3"
       p="3"
       bg="gray.50"
@@ -418,13 +481,11 @@ function AccountRow({
         <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>
           ⋮⋮
         </Text>
-      </Box>
-      <Text fontWeight="medium">
-        {account.summonerName || account.username}
-      </Text>
-      <Box display="flex" justifyContent="center">
-        {renderRankDisplay(account.rank)}
-      </Box>
+      </Box>      {getOrderedEnabledColumns().map((column) => (
+        <Box key={column} display="flex" justifyContent="center">
+          {renderColumnContent(column)}
+        </Box>
+      ))}
       <Stack direction="row" gap="1">
         <Button
           size="sm"
@@ -461,6 +522,7 @@ const restrictToHorizontalAxis: Modifier = ({ transform }) => {
 
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
+  const [enabledColumns, setEnabledColumns] = useAtom(enabledColumnsAtom);
   const [sortMode, setSortMode] = useState<"none" | "solo" | "flex">("none");
 
   const sensors = useSensors(
@@ -515,6 +577,9 @@ function AccountList() {
                 ...account,
                 summonerName: data.summonerName,
                 rank: data.rankInfo,
+                isPhoneVerified: data.isPhoneVerified,
+                ownedChampions: data.ownedChampions,
+                summonerInfo: data.summonerInfo,
               }
             : account
         );
@@ -528,22 +593,89 @@ function AccountList() {
       window.electron.ipcRenderer.removeAllListeners("riotDataUpdate");
     };
   }, [accounts, setAccounts]);
-
   if (accounts.length === 0) {
     return (
       <Box textAlign="center" py="8">
         <Text fontSize="lg" color="gray.500" _dark={{ color: "gray.400" }}>
           No accounts added yet
-        </Text>
-        <Text fontSize="sm" color="gray.400" _dark={{ color: "gray.500" }}>
+        </Text>        <Text fontSize="sm" color="gray.400" _dark={{ color: "gray.500" }}>
           Click the + button below to add your first account
         </Text>
       </Box>
     );
   }
+
+  const getGridColumns = () => {
+    const orderedColumns = allColumns.filter(column => enabledColumns.includes(column as any));
+    return `auto ${orderedColumns.map(() => "1fr").join(" ")} auto`;
+  };
+
+  const getColumnHeader = (column: string) => {
+    switch (column) {
+      case "summonerName":
+        return "Summoner Name";
+      case "rank":
+        return "Rank";
+      case "isPhoneVerified":
+        return "Phone Verified";
+      case "ownedChampions":
+        return "Champions";
+      default:
+        return column;
+    }
+  };
+
+  const toggleColumn = (column: string) => {
+    if (enabledColumns.includes(column as any)) {
+      // Don't allow removing the last column
+      if (enabledColumns.length > 1) {
+        setEnabledColumns(enabledColumns.filter(col => col !== column));
+      }
+    } else {
+      setEnabledColumns([...enabledColumns, column as any]);
+    }
+  };  const allColumns = ["summonerName", "rank", "isPhoneVerified", "ownedChampions"];
+
   return (
     <Stack gap="2">
-      <Box display="flex" justifyContent="flex-end" mb="2">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb="2">        {/* Column Settings */}
+        <Popover.Root>
+          <Popover.Trigger>
+            <Button
+              size="sm"
+              variant="outline"
+            >
+              <FaCog />
+              Column Settings
+            </Button>
+          </Popover.Trigger>          <Popover.Positioner>
+            <Popover.Content>
+              <Popover.CloseTrigger />
+              <Popover.Arrow>
+                <Popover.ArrowTip />
+              </Popover.Arrow>
+              <Popover.Body>
+                <Popover.Title>Show Columns:</Popover.Title>
+                <Stack gap="1" mt="2">
+                  {allColumns.map((column) => (
+                    <Button
+                      key={column}
+                      size="xs"
+                      variant={enabledColumns.includes(column as any) ? "solid" : "outline"}
+                      colorPalette={enabledColumns.includes(column as any) ? "riot" : "gray"}
+                      onClick={() => toggleColumn(column)}
+                      disabled={enabledColumns.includes(column as any) && enabledColumns.length === 1}
+                    >
+                      {getColumnHeader(column)}
+                    </Button>
+                  ))}
+                </Stack>
+              </Popover.Body>
+            </Popover.Content>
+          </Popover.Positioner>
+        </Popover.Root>
+
+        {/* Sort Controls */}
         <Button
           size="sm"
           variant="outline"
@@ -556,9 +688,8 @@ function AccountList() {
             : sortMode === "flex"
             ? "Sorted by Flex Queue"
             : "Sort by Rank"}
-        </Button>
-      </Box>
-      {" "}
+        </Button>      </Box>
+      
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

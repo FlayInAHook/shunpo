@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
 
 export type Account = {
@@ -25,6 +26,24 @@ export type Account = {
       previousSeasonEndDivision?: string;
     } | null;
   } | null;
+  isPhoneVerified?: boolean;
+  ownedChampions?: string[];
+  summonerInfo?: {
+    summonerId: number;
+    accountId: number;
+    displayName: string;
+    internalName: string;
+    profileIconId: number;
+    summonerLevel: number;
+    xpSinceLastLevel: number;
+    xpUntilNextLevel: number;
+    percentCompleteForNextLevel: number;
+    puuid: string;
+    nameChangeFlag: boolean;
+    unnamed: boolean;
+    gameName: string;
+    tagLine: string;
+  }
 };
 
 
@@ -36,3 +55,9 @@ export const accountsAtom = atom(accountsDefaultValue, (_get, set, newAccounts: 
     localStorage.setItem("accounts", encryptedAccounts);
   });
 });
+
+
+
+type ColumnTypes = "summonerName" | "rank" | "isPhoneVerified" | "ownedChampions";
+export const enabledColumnsAtom = atomWithStorage<ColumnTypes[]>("enabledColumns", ["summonerName", "rank"]);
+

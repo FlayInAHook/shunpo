@@ -40,28 +40,36 @@ function startConnectionMonitoring() {
     try {
       const isConnected = await connectToRiot();
       if (isConnected) {
-        const summonerName = await requestSummonerName();
+        const summonerInfo = await requestSummoner();
         const [soloQueue, flexQueue] = await requestRank();
+        const isPhoneVerified = await requestPhoneVerification();
+        const ownedChampions = await requestOwnedChampions();
 
         // Send data to renderer
         const mainWindow = BrowserWindow.getAllWindows()[0];
         if (mainWindow) {
           console.log("Sending Riot data to renderer:", {
             username: lastUsername,
-            summonerName,
+            summonerName: summonerInfo.gameName,
             rankInfo: {
               soloQueue,
               flexQueue
             },
+            summonerInfo,
+            isPhoneVerified,
+            ownedChampions,
             connected: true
           });
           mainWindow.webContents.send("riotDataUpdate", {
             username: lastUsername,
-            summonerName,
+            summonerName: summonerInfo.gameName,
             rankInfo: {
               soloQueue,
               flexQueue
             },
+            summonerInfo,
+            isPhoneVerified,
+            ownedChampions,
             connected: true
           });
         }
@@ -97,11 +105,11 @@ async function connectToRiot() {
 
 
 
-async function requestSummonerName() {
+async function requestSummoner() {
   if (!client.isConnected) await client.connect();
   const response = await client.request("get", "/lol-summoner/v1/current-summoner");
 
-  return response.gameName
+  return response
 }
 
 async function requestRank() {
@@ -112,6 +120,21 @@ async function requestRank() {
   const flexQueue = response.queues.find((queue) => queue.queueType === "RANKED_FLEX_SR");
 
   return [soloQueue, flexQueue];
+}
+
+async function requestPhoneVerification() {
+  if (!client.isConnected) await client.connect();
+  const response = await client.request("get", "/lol-account-verification/v1/is-verified");
+
+  return response.success;
+}
+
+async function requestOwnedChampions() {
+  if (!client.isConnected) await client.connect();
+  const response = await client.request("get", "/lol-champions/v1/owned-champions-minimal");
+
+  const champions = response.map((champion) => champion.name);
+  return champions;
 }
 
 
