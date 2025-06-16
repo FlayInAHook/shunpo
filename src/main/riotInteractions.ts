@@ -40,41 +40,15 @@ function startConnectionMonitoring() {
     try {
       const isConnected = await connectToRiot();
       if (isConnected) {
-        const summonerInfo = await requestSummoner();
-        const [soloQueue, flexQueue] = await requestRank();
-        const isPhoneVerified = await requestPhoneVerification();
-        const ownedChampions = await requestOwnedChampions();
-
-        // Send data to renderer
-        const mainWindow = BrowserWindow.getAllWindows()[0];
-        if (mainWindow) {
-          console.log("Sending Riot data to renderer:", {
-            username: lastUsername,
-            summonerName: summonerInfo.gameName,
-            rankInfo: {
-              soloQueue,
-              flexQueue
-            },
-            summonerInfo,
-            isPhoneVerified,
-            ownedChampions,
-            connected: true
-          });
-          mainWindow.webContents.send("riotDataUpdate", {
-            username: lastUsername,
-            summonerName: summonerInfo.gameName,
-            rankInfo: {
-              soloQueue,
-              flexQueue
-            },
-            summonerInfo,
-            isPhoneVerified,
-            ownedChampions,
-            connected: true
-          });
-        }
+        setTimeout(async () => {
+          const dataGathered = await gatherDataAndSendToRenderer();
+          if (dataGathered) {
+            console.log("Successfully gathered and sent Riot data.");
+          } else {
+            console.error("Failed to gather Riot data.");
+          }
+        }, 5000);
         
-        // Clear interval once we successfully get data
         if (loginCheckInterval) {
           clearInterval(loginCheckInterval);
           loginCheckInterval = null;
@@ -84,6 +58,40 @@ function startConnectionMonitoring() {
       console.error('Error checking riot connection:', error);
     }
   }, 5000);
+}
+
+async function gatherDataAndSendToRenderer() {
+  try {
+    const summonerInfo = await requestSummoner();
+    const [soloQueue, flexQueue] = await requestRank();
+    const isPhoneVerified = await requestPhoneVerification();
+    const ownedChampions = await requestOwnedChampions();
+
+    // Send data to renderer
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+    if (mainWindow) {
+      const data = {
+        username: lastUsername,
+        summonerName: summonerInfo.gameName,
+        rankInfo: {
+          soloQueue,
+          flexQueue
+        },
+        summonerInfo,
+        isPhoneVerified,
+        ownedChampions,
+        connected: true
+      };
+      console.log("Gathered Riot data:", data);
+      mainWindow.webContents.send("riotDataUpdate", {
+        ...data
+      });
+    }
+  } catch (error) {
+    console.error('Error gathering data:', error);
+    return false;
+  }
+  return true;
 }
 
 
