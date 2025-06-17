@@ -54,13 +54,15 @@ function createWindow(showWindow: boolean = true): void {
       sandbox: false
     }
   })
+
   
-  mainWindow.on('ready-to-show', () => {
-    if (showWindow) {
-      mainWindow!.show()
-    }
-    // If not showing window, it will remain hidden (for auto-start)
-  })
+  if (showWindow) {
+    console.log('Main window is ready to show')
+    mainWindow!.show()
+    mainWindow!.focus()
+  } else {
+    mainWindow.minimize() // Start minimized to tray if auto-started
+  }
 
   // Send window state changes to renderer for custom title bar
   mainWindow.on('maximize', () => {
@@ -296,11 +298,10 @@ function createTray(): void {
   })
 }
 
-let isInteractable = false; 
+
 function makeDemoInteractive () {
 
   mainWindow!.on('blur', () => {
-    isInteractable = false
     mainWindow!.webContents.send('focus-change', false)
   })
 }
