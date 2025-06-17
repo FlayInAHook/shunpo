@@ -5,6 +5,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { FaEdit, FaPlay, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { Account, accountsAtom, enabledColumnsAtom } from "../../Datastorage";
 import RankDisplay from "../account/RankDisplay";
+import { PasswordInput } from "../ui/password-input";
 
 interface AccountRowProps {
   account: Account;
@@ -217,14 +218,13 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
           size="sm"
           colorPalette="riot"
         />
-        <Input
-          type="password"
+        <PasswordInput
           value={editPassword}
           onChange={(e) => setEditPassword(e.target.value)}
           placeholder="Password"
           size="sm"
           colorPalette="riot"
-        />
+          />
         <Stack direction="row" gap="1">
           <Button
             size="sm"
