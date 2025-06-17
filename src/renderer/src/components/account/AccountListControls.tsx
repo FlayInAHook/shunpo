@@ -52,7 +52,8 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
         });
       }
       return acc;
-    }, [] as { value: string; label: string }[]);
+    }, [] as { value: string; label: string }[])
+    .sort((a, b) => a.label.localeCompare(b.label));
   }, [accounts]);
 
   function handleSelectChange(selectedOptions: any) {
@@ -139,6 +140,7 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
         options={championOptions()}
         value={championOptions().filter(option => selectedChampions.includes(option.value))}
         onChange={handleSelectChange}
+        placeholder="Select Champions"
         menuPortalTarget={document.body}
         chakraStyles={{
           container: (provided) => ({

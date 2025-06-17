@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Stack, Switch, Text } from "@chakra-ui/react";
 import { FaCog, FaUser } from "react-icons/fa";
 
 function Header() {
@@ -17,6 +17,21 @@ function Header() {
         Shunpo - LoL Account Manager
       </Text>
       <Stack direction="row" gap="2">
+        <Switch.Root
+          onCheckedChange={(e) => {
+            if (e.checked) {
+              window.electron.ipcRenderer.send("pauseOverlayAttach");
+            } else {
+              window.electron.ipcRenderer.send("resumeOverlayAttach");
+            }
+          }}
+        >
+          <Switch.HiddenInput />
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Label>Pause Overlay</Switch.Label>
+        </Switch.Root>
         <Button
           size="sm"
           variant="ghost"

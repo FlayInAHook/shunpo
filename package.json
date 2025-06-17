@@ -19,7 +19,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "prebuildOverlay": "cd node_modules/electron-overlay-window && npm run prebuild && bun remove tsc && npm run build",
+    "prebuildOverlay": "cd node_modules/electron-overlay-window && bun run build",
     "generate:theme": "bunx chakra typegen ./src/renderer/src/theme/theme.ts"
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.1",
     "@types/react-dom": "^19.1.2",
+    "@types/throttle-debounce": "^5.0.2",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^35.1.5",
     "electron-builder": "^25.1.8",

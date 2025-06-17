@@ -185,6 +185,25 @@ app.whenReady().then(() => {
       mainWindow.close()
     }
   })
+
+  ipcMain.on("pauseOverlayAttach", () => {
+    OverlayController.pause();
+    mainWindow?.show();
+    mainWindow?.focus();
+    setTimeout(() => {
+      mainWindow?.show();
+      mainWindow?.focus();
+    }, 10);
+    
+  })
+
+  ipcMain.on("resumeOverlayAttach", () => {
+    OverlayController.resume();
+    setTimeout(() => {
+      mainWindow?.minimize();
+    }, 10);
+  })
+
     // Create window - don't show if auto-started
   createWindow(!wasAutoStarted)
 
@@ -279,30 +298,11 @@ function createTray(): void {
 
 let isInteractable = false; 
 function makeDemoInteractive () {
-  // Function to toggle overlay state - available for global shortcuts
-  const toggleOverlayState = () => {
-    if (isInteractable) {
-      isInteractable = false
-      OverlayController.focusTarget()
-      mainWindow!.webContents.send('focus-change', false)
-    } else {
-      isInteractable = true
-      OverlayController.activateOverlay()
-      mainWindow!.webContents.send('focus-change', true)
-    }
-  }
 
   mainWindow!.on('blur', () => {
     isInteractable = false
     mainWindow!.webContents.send('focus-change', false)
   })
-
-  // Global shortcuts can be enabled here if needed
-  // globalShortcut.register('CmdOrCtrl + J', toggleOverlayState)
-  // globalShortcut.register('CmdOrCtrl + L', () => logIntoLeague("", ""))
-  
-  // Prevent unused function warning
-  void toggleOverlayState
 }
 
 

@@ -27,6 +27,7 @@
         "@types/node": "^22.14.1",
         "@types/react": "^19.1.1",
         "@types/react-dom": "^19.1.2",
+        "@types/throttle-debounce": "^5.0.2",
         "@vitejs/plugin-react": "^4.3.4",
         "electron": "^35.1.5",
         "electron-builder": "^25.1.8",
@@ -374,6 +375,8 @@
     "@types/react-transition-group": ["@types/react-transition-group@4.4.12", "", { "peerDependencies": { "@types/react": "*" } }, "sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w=="],
 
     "@types/responselike": ["@types/responselike@1.0.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw=="],
+
+    "@types/throttle-debounce": ["@types/throttle-debounce@5.0.2", "", {}, "sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ=="],
 
     "@types/verror": ["@types/verror@1.10.11", "", {}, "sha512-RlDm9K7+o5stv0Co8i8ZRGxDbrTxhJtgjqjFyVh/tXQyl/rYtTKlnTvZ88oSTeYREWurwx20Js4kTuKCsFkUtg=="],
 
@@ -783,7 +786,7 @@
 
     "electron-builder-squirrel-windows": ["electron-builder-squirrel-windows@25.1.8", "", { "dependencies": { "app-builder-lib": "25.1.8", "archiver": "^5.3.1", "builder-util": "25.1.7", "fs-extra": "^10.1.0" } }, "sha512-2ntkJ+9+0GFP6nAISiMabKt6eqBB0kX1QqHNWFWAXgi0VULKGisM46luRFpIBiU3u/TDmhZMM8tzvo2Abn3ayg=="],
 
-    "electron-overlay-window": ["electron-overlay-window@github:FlayInAHook/electron-overlay-window-margin#1ebdccf", { "dependencies": { "node-gyp-build": "4.x.x", "throttle-debounce": "5.x.x", "typescript": "5.x.x" }, "peerDependencies": { "electron": ">= 18" } }, "FlayInAHook-electron-overlay-window-margin-1ebdccf"],
+    "electron-overlay-window": ["electron-overlay-window@github:FlayInAHook/electron-overlay-window-margin#00c88b3", { "dependencies": { "node-gyp-build": "4.x.x", "throttle-debounce": "5.x.x", "typescript": "5.x.x" }, "peerDependencies": { "electron": ">= 18" } }, "FlayInAHook-electron-overlay-window-margin-00c88b3"],
 
     "electron-publish": ["electron-publish@25.1.7", "", { "dependencies": { "@types/fs-extra": "^9.0.11", "builder-util": "25.1.7", "builder-util-runtime": "9.2.10", "chalk": "^4.1.2", "fs-extra": "^10.1.0", "lazy-val": "^1.0.5", "mime": "^2.5.2" } }, "sha512-+jbTkR9m39eDBMP4gfbqglDd6UvBC7RLh5Y0MhFSsc6UkGHj9Vj9TWobxevHYMMqmoujL11ZLjfPpMX+Pt6YEg=="],
 
