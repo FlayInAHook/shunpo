@@ -46,12 +46,13 @@ export const UpdateNotification: React.FC = () => {
         case 'error':
           toaster.create({
             title: 'Update check failed',
-            description: data.data?.message || 'An error occurred while checking for updates.',
+            description: 'An error occurred while checking for updates.',
             type: 'error',
             duration: 5000,
           })
           setUpdateStatus(null)
           setIsDownloading(false)
+          console.error('Update check error:', data)
           break
         case 'download-progress':
           setIsDownloading(true)
@@ -113,7 +114,7 @@ export const UpdateNotification: React.FC = () => {
 
   if (!updateStatus || updateStatus.status === 'checking-for-update') {
     return (
-      <HStack justify="space-between" align="center" p={2}>
+      <HStack justify="end" align="center" p={2}>
         <Text fontSize="sm" color="gray.500">
           Version: {appVersion}
         </Text>
@@ -222,7 +223,7 @@ export const UpdateNotification: React.FC = () => {
   }
 
   return (
-    <HStack justify="space-between" align="center" p={2}>
+    <HStack justify="end" align="center" p={2}>
       <Text fontSize="sm" color="gray.500">
         Version: {appVersion}
       </Text>

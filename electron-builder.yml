@@ -19,6 +19,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
   include: build/uninstaller.nsh
+  deleteAppDataOnUninstall: true
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:

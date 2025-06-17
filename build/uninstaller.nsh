@@ -8,14 +8,4 @@
   
   ; Remove the config directory and all its contents from user profile
   RMDir /r "$PROFILE\.shunpo"
-  
-  ; Also clean up potential app data locations
-  RMDir /r "$APPDATA\shunpo"
-  RMDir /r "$LOCALAPPDATA\shunpo"
-  
-  ; Remove any remaining temporary files
-  RMDir /r "$TEMP\shunpo"
-  
-  ; Log the cleanup for debugging
-  DetailPrint "Cleaned up Riot Account Manager configuration files"
 !macroend
