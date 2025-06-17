@@ -66,6 +66,8 @@ async function gatherDataAndSendToRenderer() {
     const [soloQueue, flexQueue] = await requestRank();
     const isPhoneVerified = await requestPhoneVerification();
     const ownedChampions = await requestOwnedChampions();
+    addListenersToRiotEvents();
+
 
     // Send data to renderer
     const mainWindow = BrowserWindow.getAllWindows()[0];
@@ -145,4 +147,54 @@ async function requestOwnedChampions() {
   return champions;
 }
 
+
+function addListenersToRiotEvents() {
+  //OnJsonApiEvent_lol-end-of-game_v1_eog-stats-block
+  // 
+  //OnJsonApiEvent_lol-champions_v1_inventories
+
+  // Disenchant/Buy: lol-inventory/v2/inventory/CHAMPION
+  //             lol-inventory/v1/notifications/CHAMPION
+  //             lol-champions/v1/owned-champions-minimal
+  //             lol-champions/v1/<summonerId>/champions-playable-count
+  client.removeAllLCUEventListeners();
+
+  client.addLCUEventListener({
+    name: "OnJsonApiEvent_lol-gameflow_v1_gameflow-phase",
+    types: ["Update"],
+    callback: onGameFlowPhaseUpdate
+  });
+
+  client.addLCUEventListener({
+    name: "OnJsonApiEvent_lol-champions_v1_owned-champions-minimal",
+    types: ["Update"],
+    callback: onOwnedChampionsUpdate
+  });
+
+  client.addLCUEventListener({
+    name: "OnJsonApiEvent_riotclient_pre-shutdown_begin",
+    types: ["Update"],
+    callback: onPreShutdownBeginUpdate
+  });
+
+
+}
+
+function onGameFlowPhaseUpdate(event: any) {
+  console.log("Gameflow phase changed:", event);
+  if (event.data == "None"){
+    gatherDataAndSendToRenderer();
+  }
+}
+
+function onOwnedChampionsUpdate(_event: any) {
+  console.log("Owned champions updated:");
+  // one could probably also use the data in here but w/e
+  gatherDataAndSendToRenderer();
+}
+
+function onPreShutdownBeginUpdate(event: any) {
+  console.log("Pre-shutdown event received:", event);
+  client.removeAllLCUEventListeners();
+}
 

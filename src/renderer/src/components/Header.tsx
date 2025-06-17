@@ -14,7 +14,7 @@ function Header() {
       boxShadow="md"
     >
       <Text fontSize="xl" fontWeight="bold">
-        Riot Account Manager
+        Shunpo - LoL Account Manager
       </Text>
       <Stack direction="row" gap="2">
         <Button

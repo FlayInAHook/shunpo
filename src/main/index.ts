@@ -8,7 +8,35 @@ import "./riotInteractions.ts";
 
 let mainWindow: BrowserWindow | null = null
 let appIcon: Tray | null = null;
-function createWindow(): void {
+
+// Single instance functionality
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {  
+  app.on('second-instance', (_event, _commandLine, _workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window instead.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      if (!mainWindow.isVisible()) mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+}
+
+// Auto-start functionality
+function getAutoStartEnabled(): boolean {
+  return app.getLoginItemSettings().openAtLogin;
+}
+
+function setAutoStartEnabled(enabled: boolean): void {
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    openAsHidden: enabled, // Start minimized to tray when auto-started
+  });
+}
+function createWindow(showWindow: boolean = true): void {
   // Check if menubar and titlebar should be auto-hidden
   const shouldAutoHideMenuBar = !is.dev || process.env.BUILD_TEST === 'true';
   const shouldHideTitleBar = !is.dev || process.env.BUILD_TEST === 'true';
@@ -28,7 +56,10 @@ function createWindow(): void {
   })
   
   mainWindow.on('ready-to-show', () => {
-    mainWindow!.show()
+    if (showWindow) {
+      mainWindow!.show()
+    }
+    // If not showing window, it will remain hidden (for auto-start)
   })
 
   // Send window state changes to renderer for custom title bar
@@ -50,7 +81,7 @@ function createWindow(): void {
       if (!mainWindow!.isMinimized()) {
         appIcon?.displayBalloon({
           iconType: 'info',
-          title: 'Riot Account Manager',
+          title: 'Shunpo - LoL Account Manager',
           content: 'App was minimized to tray. Click the tray icon to restore.'
         })
       }
@@ -79,7 +110,7 @@ function createWindow(): void {
         hasTitleBarOnMac: true,
         marginPercent: {
           top: 25,
-          left: 70,
+          left: 50,
         },
         selfHandleClickable: true
       }
@@ -100,7 +131,11 @@ app.whenReady().then(() => {
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
-  })  // IPC test
+  })
+  // Check if app was started by Windows startup (auto-start)
+  const wasAutoStarted = process.argv.includes('--hidden') || app.getLoginItemSettings().wasOpenedAsHidden;
+  
+  // IPC test
   ipcMain.on('ping', (_event, _username: string, _password: string) => {
     console.log('Received ping from renderer process');
   })
@@ -150,10 +185,22 @@ app.whenReady().then(() => {
       mainWindow.close()
     }
   })
-  createWindow()
+    // Create window - don't show if auto-started
+  createWindow(!wasAutoStarted)
 
   // Create system tray
   createTray()
+
+  // Show notification if auto-started
+  if (wasAutoStarted) {
+    setTimeout(() => {
+      appIcon?.displayBalloon({
+        iconType: 'info',
+        title: 'Shunpo - LoL Account Manager',
+        content: 'App started with Windows and is running in the system tray.'
+      })
+    }, 2000) // Small delay to ensure tray is created
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -166,37 +213,56 @@ function createTray(): void {
   appIcon = new Tray(icon)
   appIcon.setToolTip('Riot Account Manager')
   
-  const contextMenu = Menu.buildFromTemplate([
-    { 
-      label: 'Show/Hide', 
-      click: () => {
-        if (mainWindow) {
-          if (mainWindow.isVisible()) {
-            mainWindow.hide()
-          } else {
-            mainWindow.show()
-            mainWindow.focus()
+  const updateContextMenu = () => {
+    const isAutoStartEnabled = getAutoStartEnabled();
+    
+    const contextMenu = Menu.buildFromTemplate([
+      { 
+        label: 'Show/Hide', 
+        click: () => {
+          if (mainWindow) {
+            if (mainWindow.isVisible()) {
+              mainWindow.hide()
+            } else {
+              mainWindow.show()
+              mainWindow.focus()
+            }
           }
         }
+      },
+      { type: 'separator' },
+      {
+        label: 'Start on Windows Startup',
+        type: 'checkbox',
+        checked: isAutoStartEnabled,
+        click: () => {
+          const newState = !getAutoStartEnabled();
+          setAutoStartEnabled(newState);
+          // Update the menu to reflect the new state
+          updateContextMenu();
+        }
+      },
+      { type: 'separator' },
+      { 
+        label: 'Restart App', 
+        click: () => {
+          app.relaunch()
+          app.exit()
+        }
+      },
+      { 
+        label: 'Quit', 
+        click: () => {
+          app.exit()
+        }
       }
-    },
-    { type: 'separator' },
-    { 
-      label: 'Restart App', 
-      click: () => {
-        app.relaunch()
-        app.exit()
-      }
-    },
-    { 
-      label: 'Quit', 
-      click: () => {
-        app.exit()
-      }
-    }
-  ])
+    ])
 
-  appIcon.setContextMenu(contextMenu)
+    appIcon!.setContextMenu(contextMenu)
+  }
+
+  // Initial menu creation
+  updateContextMenu()
   
   // Handle tray icon click (show/hide window)
   appIcon.on('click', () => {
