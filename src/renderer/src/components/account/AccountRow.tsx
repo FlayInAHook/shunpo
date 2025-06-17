@@ -1,6 +1,7 @@
 import { Box, Button, Grid, Input, Stack, Text } from "@chakra-ui/react";
 import { useAtom } from "jotai";
 import { useState } from "react";
+import { useHotkeys } from 'react-hotkeys-hook';
 import { FaEdit, FaPlay, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { Account, accountsAtom, enabledColumnsAtom } from "../../Datastorage";
 import RankDisplay from "../account/RankDisplay";
@@ -19,6 +20,11 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
   const [editPassword, setEditPassword] = useState(account.password);
+  const [isRedacted, setIsRedacted] = useState(false);
+
+  useHotkeys('ctrl+shift+d', () => {
+    setIsRedacted(!isRedacted);
+  });
 
   const allColumns = ["summonerName", "rank", "isPhoneVerified", "ownedChampions"];
   
@@ -69,7 +75,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
         return (
           <Box display="flex" justifyContent="center">
             <Text fontWeight="medium">
-              {account.summonerName || account.username}
+              {isRedacted ? "**********" : account.summonerName || account.username}
             </Text>
           </Box>
         );

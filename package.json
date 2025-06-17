@@ -37,6 +37,7 @@
     "electron-updater": "^6.3.9",
     "jotai": "^2.12.5",
     "next-themes": "^0.4.6",
+    "react-hotkeys-hook": "^5.1.0",
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
