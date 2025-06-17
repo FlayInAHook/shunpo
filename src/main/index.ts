@@ -1,6 +1,8 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { OverlayController } from 'electron-overlay-window';
+import { existsSync, rmSync, writeFileSync } from 'fs';
+import { homedir } from 'os';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import "./encrypt.ts";
@@ -35,6 +37,58 @@ function setAutoStartEnabled(enabled: boolean): void {
     openAtLogin: enabled,
     openAsHidden: enabled, // Start minimized to tray when auto-started
   });
+}
+
+// Cleanup function to remove config data
+function cleanupConfigData(): void {
+  try {
+    const configDir = join(homedir(), '.shunpo');
+    if (existsSync(configDir)) {
+      rmSync(configDir, { recursive: true, force: true });
+      console.log('Config data cleaned up successfully');
+    }
+  } catch (error) {
+    console.error('Error cleaning up config data:', error);
+  }
+}
+
+// First run detection and default auto-start setup
+function setupDefaultAutoStart(): void {
+  try {
+    const configDir = join(homedir(), '.shunpo');
+    const configFile = join(configDir, 'config.json');
+    console.log('Config directory:', configDir);
+    
+    // Check if config file exists (indicates previous installation)
+    if (!existsSync(configFile)) {
+      // First run - enable auto-start by default
+      if (process.platform === 'win32' && !is.dev) {
+        setAutoStartEnabled(true);
+        
+        // Show notification about auto-start being enabled
+        setTimeout(() => {
+          appIcon?.displayBalloon({
+            iconType: 'info',
+            title: 'Riot Account Manager',
+            content: 'Auto-start with Windows has been enabled by default. You can disable this in the tray menu.'
+          })
+        }, 3000); // Delay to ensure tray is created
+      }
+      
+      // Create config directory and file to mark as initialized
+      if (!existsSync(configDir)) {
+        require('fs').mkdirSync(configDir, { recursive: true });
+      }
+      
+      writeFileSync(configFile, JSON.stringify({
+        firstRunCompleted: true,
+        autoStartEnabledByDefault: true,
+        createdAt: new Date().toISOString()
+      }, null, 2));
+    }
+  } catch (error) {
+    console.error('Error setting up default auto-start:', error);
+  }
 }
 function createWindow(showWindow: boolean = true): void {
   // Check if menubar and titlebar should be auto-hidden
@@ -128,6 +182,9 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
+  // Setup default auto-start on first run
+  setupDefaultAutoStart()
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -154,9 +211,13 @@ app.whenReady().then(() => {
       mainWindow.focus()
     }
   })
-
   ipcMain.handle('quit-app', () => {
     app.quit()
+  })
+
+  // IPC handler for cleaning up config data (useful for testing or reset functionality)
+  ipcMain.handle('cleanup-config-data', () => {
+    cleanupConfigData()
   })
 
   // IPC handlers for custom title bar window controls
@@ -201,6 +262,7 @@ app.whenReady().then(() => {
 
   ipcMain.on("resumeOverlayAttach", () => {
     OverlayController.resume();
+    OverlayController.resetPosition();
     setTimeout(() => {
       mainWindow?.minimize();
     }, 10);
@@ -315,8 +377,13 @@ app.on('window-all-closed', () => {
   // Only quit if on macOS and Cmd+Q was pressed, otherwise keep running in tray
   if (process.platform === 'darwin') {
     app.quit()
-  }
-  // On Windows/Linux, app continues running in system tray
+  }  // On Windows/Linux, app continues running in system tray
+})
+
+// Handle app quit events
+app.on('before-quit', () => {
+  // Note: We don't clean up config data here as it should persist between sessions
+  // The cleanup only happens during uninstall via the NSIS script
 })
 
 // In this file you can include the rest of your app's specific main process

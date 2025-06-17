@@ -2,6 +2,7 @@ import { Box, Container, Stack } from '@chakra-ui/react'
 import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
 import Header from './components/Header'
+import PatternBackground from './components/PatternBackground'
 import { useColorMode } from './components/ui/color-mode'
 import { Toaster } from './components/ui/toaster'
 import darkScrollbar from './theme/scrollbar.dark.css?inline'
@@ -36,7 +37,7 @@ function App(): React.JSX.Element {
     }
   }, [headerRef, footerRef])
   return (
-    <Box h="100vh" display="flex" flexDirection="column">
+    <PatternBackground pattern='isometric' textAlign="center" justifyContent={'center'} h="100vh" display="flex" flexDirection="column" className="dark" overflowX={"hidden"}>
       <Toaster />
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
       <Box ref={headerRef}>
@@ -52,7 +53,7 @@ function App(): React.JSX.Element {
       <Box ref={footerRef}>
         {/*<Footer />*/}
       </Box>
-    </Box>
+    </PatternBackground>
   )
 }
 

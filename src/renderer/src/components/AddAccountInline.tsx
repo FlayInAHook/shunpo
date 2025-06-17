@@ -211,6 +211,7 @@ function AddAccountInline() {
               onClick={handleSave}
               disabled={!username.trim() || !password.trim()}
               title="Save account"
+              _hover={{ bg: "riot.400/60" }}
             >
               <FaSave />
             </Button>
@@ -244,6 +245,7 @@ function AddAccountInline() {
           colorPalette="riot"
           size="lg"
           onClick={handleAdd}
+          _hover={{ bg: "riot.400/60" }}
         >
           <FaPlus />
           Add Account

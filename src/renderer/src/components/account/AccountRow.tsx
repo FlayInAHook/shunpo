@@ -157,8 +157,8 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
         templateColumns="1fr 1fr auto"
         gap="3"
         p="3"
-        bg="gray.50"
-        _dark={{ bg: "gray.700" }}
+        //bg="gray.50"
+        //_dark={{ bg: "gray.700/50" }}
         borderRadius="md"
       >
         <Input
@@ -198,8 +198,10 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
       templateColumns={getGridColumns()}
       gap="3"
       p="3"
-      bg="gray.50"
-      _dark={{ bg: "gray.700" }}
+      //bg="gray.50"
+      //_dark={{ bg: "gray.700" }}
+      border={"1px solid"}
+      borderColor="gray.500"
       borderRadius="md"
       alignItems="center"
     >

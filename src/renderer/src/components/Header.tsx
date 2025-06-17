@@ -1,5 +1,4 @@
-import { Box, Button, Stack, Switch, Text } from "@chakra-ui/react";
-import { FaCog, FaUser } from "react-icons/fa";
+import { Box, Stack, Switch, Text } from "@chakra-ui/react";
 
 function Header() {
 
@@ -32,22 +31,6 @@ function Header() {
           </Switch.Control>
           <Switch.Label>Pause Overlay</Switch.Label>
         </Switch.Root>
-        <Button
-          size="sm"
-          variant="ghost"
-          color="white"
-          _hover={{ bg: "riot.600" }}
-        >
-          <FaUser />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          color="white"
-          _hover={{ bg: "riot.600" }}
-        >
-          <FaCog />
-        </Button>
       </Stack>
     </Box>
   );
