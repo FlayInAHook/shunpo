@@ -63,10 +63,12 @@ function App(): React.JSX.Element {
         <Header />
       </Box>
 
-      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">        <Stack gap="6" height="100%">
+      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">       
+        <Stack gap="6" height="100%">
           <Box flex="1">
             <AccountList />
-          </Box>        </Stack>
+          </Box>
+        </Stack>
       </Container>
       
       <Box ref={footerRef}>

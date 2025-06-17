@@ -26,7 +26,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
 
   useHotkeys('ctrl+shift+d', () => {
     setIsRedacted(!isRedacted);
-  });
+  }, [isRedacted]);
 
   const allColumns = ["summonerName", "rank", "isPhoneVerified", "ownedChampions"];
   
