@@ -1,6 +1,7 @@
 import { Box, Container, Stack } from '@chakra-ui/react'
 import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
+import CustomTitleBar from './components/CustomTitleBar'
 import Header from './components/Header'
 import PatternBackground from './components/PatternBackground'
 import { useColorMode } from './components/ui/color-mode'
@@ -16,13 +17,14 @@ function App(): React.JSX.Element {
   const footerRef = useRef<HTMLDivElement>(null)
 
   const [containerHeight, setContainerHeight] = useState('calc(100vh - 68px)') // Default height, will be updated on mount
-
+  const [isOverlayPaused, setIsOverlayPaused] = useState(false) // Track overlay state
   useEffect(() => {
     const updateContainerHeight = () => {
       if (headerRef.current && footerRef.current) {
         const headerHeight = headerRef.current.offsetHeight
         const footerHeight = footerRef.current.offsetHeight
-        setContainerHeight(`calc(100vh - ${headerHeight + footerHeight}px)`)
+        const titleBarHeight = isOverlayPaused ? 32 : 0 // Account for custom title bar
+        setContainerHeight(`calc(100vh - ${headerHeight + footerHeight + titleBarHeight}px)`)
       }
     }
 
@@ -35,11 +37,28 @@ function App(): React.JSX.Element {
     return () => {
       window.removeEventListener('resize', updateContainerHeight)
     }
-  }, [headerRef, footerRef])
+  }, [headerRef, footerRef, isOverlayPaused])
+
+  useEffect(() => {
+    // Listen for overlay state changes from main process
+    const handleOverlayStateChange = (_event: any, data: { isPaused: boolean }) => {
+      setIsOverlayPaused(data.isPaused)
+    }
+
+    window.electron.ipcRenderer.on('overlay-state-changed', handleOverlayStateChange)
+
+    return () => {
+      window.electron.ipcRenderer.removeListener('overlay-state-changed', handleOverlayStateChange)
+    }
+  }, [])
+  
   return (
     <PatternBackground pattern='isometric' textAlign="center" justifyContent={'center'} h="100vh" display="flex" flexDirection="column" className="dark" overflowX={"hidden"}>
       <Toaster />
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
+      
+      <CustomTitleBar visible={isOverlayPaused} />
+      
       <Box ref={headerRef}>
         <Header />
       </Box>

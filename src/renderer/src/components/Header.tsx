@@ -1,6 +1,21 @@
 import { Box, Stack, Switch, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 
 function Header() {
+  const [isOverlayPaused, setIsOverlayPaused] = useState(false);
+
+  useEffect(() => {
+    // Listen for overlay state changes from main process
+    const handleOverlayStateChange = (_event: any, data: { isPaused: boolean }) => {
+      setIsOverlayPaused(data.isPaused);
+    };
+
+    window.electron.ipcRenderer.on('overlay-state-changed', handleOverlayStateChange);
+
+    return () => {
+      window.electron.ipcRenderer.removeListener('overlay-state-changed', handleOverlayStateChange);
+    };
+  }, []);
 
   return (
     <Box
@@ -17,7 +32,9 @@ function Header() {
       </Text>
       <Stack direction="row" gap="2">
         <Switch.Root
+          checked={isOverlayPaused}
           onCheckedChange={(e) => {
+            setIsOverlayPaused(e.checked);
             if (e.checked) {
               window.electron.ipcRenderer.send("pauseOverlayAttach");
             } else {
@@ -29,7 +46,9 @@ function Header() {
           <Switch.Control>
             <Switch.Thumb />
           </Switch.Control>
-          <Switch.Label>Pause Overlay</Switch.Label>
+          <Switch.Label>
+            {isOverlayPaused ? 'Resume Overlay (Hide Title Bar)' : 'Pause Overlay (Show Title Bar)'}
+          </Switch.Label>
         </Switch.Root>
       </Stack>
     </Box>

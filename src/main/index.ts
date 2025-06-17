@@ -93,7 +93,6 @@ function setupDefaultAutoStart(): void {
 function createWindow(showWindow: boolean = true): void {
   // Check if menubar and titlebar should be auto-hidden
   const shouldAutoHideMenuBar = !is.dev || process.env.BUILD_TEST === 'true';
-  const shouldHideTitleBar = !is.dev || process.env.BUILD_TEST === 'true';
   const shouldAttachOverlay = !is.dev || process.env.BUILD_TEST === 'true';
   
   // Create the browser window.
@@ -102,7 +101,7 @@ function createWindow(showWindow: boolean = true): void {
     height: 670,
     show: false,
     autoHideMenuBar: shouldAutoHideMenuBar,
-    titleBarStyle: shouldHideTitleBar ? 'hidden' : 'default',
+    titleBarStyle: 'hidden', // Always use hidden - we'll manage custom title bar in React
     ...(process.platform === 'linux' ? { icon } : {}),    webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -248,7 +247,6 @@ app.whenReady().then(() => {
       mainWindow.close()
     }
   })
-
   ipcMain.on("pauseOverlayAttach", () => {
     OverlayController.pause();
     mainWindow?.show();
@@ -258,6 +256,8 @@ app.whenReady().then(() => {
       mainWindow?.focus();
     }, 10);
     
+    // Notify renderer that overlay is paused (title bar should be shown)
+    mainWindow?.webContents.send('overlay-state-changed', { isPaused: true });
   })
 
   ipcMain.on("resumeOverlayAttach", () => {
@@ -266,6 +266,9 @@ app.whenReady().then(() => {
     setTimeout(() => {
       mainWindow?.minimize();
     }, 10);
+    
+    // Notify renderer that overlay is resumed (title bar should be hidden)
+    mainWindow?.webContents.send('overlay-state-changed', { isPaused: false });
   })
 
     // Create window - don't show if auto-started
