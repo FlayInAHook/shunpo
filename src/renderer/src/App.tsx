@@ -4,6 +4,7 @@ import AccountList from './components/AccountList'
 import CustomTitleBar from './components/CustomTitleBar'
 import Header from './components/Header'
 import PatternBackground from './components/PatternBackground'
+import UpdateNotification from './components/UpdateNotification'
 import { useColorMode } from './components/ui/color-mode'
 import { Toaster } from './components/ui/toaster'
 import darkScrollbar from './theme/scrollbar.dark.css?inline'
@@ -61,10 +62,9 @@ function App(): React.JSX.Element {
       
       <Box ref={headerRef}>
         <Header />
-      </Box>
-
-      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">       
+      </Box>      <Container maxW="6xl" h={containerHeight} flex="1" p="5" overflowY="scroll">       
         <Stack gap="6" height="100%">
+          <UpdateNotification />
           <Box flex="1">
             <AccountList />
           </Box>

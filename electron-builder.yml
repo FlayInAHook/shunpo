@@ -40,7 +40,8 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: FlayInAHook
+  repo: shunpo
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

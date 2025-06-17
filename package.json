@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "LoL Account Manager",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "FlayInAHook",
+  "homepage": "https://github.com/FlayInAHook/shunpo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlayInAHook/shunpo.git"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -19,6 +23,10 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
+    "publish": "npm run build && electron-builder --publish=always",
+    "publish:win": "npm run build && electron-builder --win --publish=always",
+    "publish:mac": "electron-vite build && electron-builder --mac --publish=always",
+    "publish:linux": "electron-vite build && electron-builder --linux --publish=always",
     "prebuildOverlay": "cd node_modules/electron-overlay-window && bun run build",
     "generate:theme": "bunx chakra typegen ./src/renderer/src/theme/theme.ts"
   },

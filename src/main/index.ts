@@ -5,6 +5,7 @@ import { existsSync, rmSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
+import { appUpdater } from './autoUpdater';
 import "./encrypt.ts";
 import "./riotInteractions.ts";
 
@@ -156,7 +157,6 @@ function createWindow(showWindow: boolean = true): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
   makeDemoInteractive()
-
   if (shouldAttachOverlay) {
     OverlayController.attachByTitle(
       mainWindow!,
@@ -172,6 +172,9 @@ function createWindow(showWindow: boolean = true): void {
     )
   }
   mainWindow!.setIgnoreMouseEvents(false);
+
+  // Set main window for auto-updater
+  appUpdater.setMainWindow(mainWindow!);
 }
 
 // This method will be called when Electron has finished
@@ -272,9 +275,16 @@ app.whenReady().then(() => {
 
     // Create window - don't show if auto-started
   createWindow(!wasAutoStarted)
-
   // Create system tray
   createTray()
+
+  // Start periodic update checks (every 6 hours)
+  appUpdater.startPeriodicUpdateCheck(1)
+
+  // Check for updates on startup (delayed to let the app fully load)
+  setTimeout(() => {
+    appUpdater.checkForUpdates()
+  }, 5000) // 5 second delay
 
   // Show notification if auto-started
   if (wasAutoStarted) {
@@ -324,12 +334,18 @@ function createTray(): void {
           const newState = !getAutoStartEnabled();
           setAutoStartEnabled(newState);
           // Update the menu to reflect the new state
-          updateContextMenu();
+          updateContextMenu();        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Check for Updates',
+        click: () => {
+          appUpdater.checkForUpdates()
         }
       },
       { type: 'separator' },
       { 
-        label: 'Restart App', 
+        label: 'Restart App',
         click: () => {
           app.relaunch()
           app.exit()
