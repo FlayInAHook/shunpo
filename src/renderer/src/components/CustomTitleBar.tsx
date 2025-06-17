@@ -1,6 +1,7 @@
-import { Box, Button, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Image } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { VscChromeMaximize, VscChromeMinimize, VscChromeRestore, VscClose } from "react-icons/vsc";
+import Icon from "../assets/icon.png";
 
 interface CustomTitleBarProps {
   visible: boolean;
@@ -57,9 +58,7 @@ function CustomTitleBar({ visible }: CustomTitleBarProps) {
       borderBottom="1px solid"
       borderColor="gray.700"
     >
-      <Text fontSize="sm" fontWeight="medium">
-        Shunpo - LoL Account Manager
-      </Text>
+      <Image src={Icon} alt="Shunpo Icon" boxSize="20px" />
       
       <HStack gap="0" style={{ WebkitAppRegion: 'no-drag' } as any}>        
         <Button

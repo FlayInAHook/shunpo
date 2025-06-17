@@ -243,9 +243,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('window-close', () => {
-    if (mainWindow) {
-      mainWindow.close()
-    }
+    app.exit();
   })
   ipcMain.on("pauseOverlayAttach", () => {
     OverlayController.pause();
@@ -261,6 +259,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on("resumeOverlayAttach", () => {
+    mainWindow?.unmaximize();
     OverlayController.resume();
     OverlayController.resetPosition();
     setTimeout(() => {
