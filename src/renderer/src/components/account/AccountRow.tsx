@@ -14,13 +14,14 @@ interface AccountRowProps {
   disableDragHandle?: boolean;
 }
 
-function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
+function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {  
   const [accounts, setAccounts] = useAtom(accountsAtom);
   const [enabledColumns] = useAtom(enabledColumnsAtom);
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
   const [editPassword, setEditPassword] = useState(account.password);
   const [isRedacted, setIsRedacted] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   useHotkeys('ctrl+shift+d', () => {
     setIsRedacted(!isRedacted);
@@ -63,10 +64,18 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
     setEditPassword(account.password);
     setIsEditing(false);
   }
-
   function handleDelete() {
+    setShowDeleteConfirmation(true);
+  }
+
+  function handleConfirmDelete() {
     const updatedAccounts = accounts.filter((_, i) => i !== index);
     setAccounts(updatedAccounts);
+    setShowDeleteConfirmation(false);
+  }
+
+  function handleCancelDelete() {
+    setShowDeleteConfirmation(false);
   }
 
   function renderColumnContent(column: string) {
@@ -130,8 +139,42 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
       </Box>
     );
   }
-
   function renderActionButtons() {
+    if (showDeleteConfirmation) {
+      return (
+        <Stack direction="row" gap="1">
+          <Button
+            size="sm"
+            colorPalette="riot"
+            onClick={handleLogin}
+            title="Login"
+          >
+            <FaPlay />
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleEdit} title="Edit">
+            <FaEdit />
+          </Button>
+          <Button
+            size="sm"
+            colorPalette="riot"
+            onClick={handleConfirmDelete}
+            _hover={{ bg: "red.400/60"}}
+            title="Confirm Delete"
+          >
+            <FaTrash />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCancelDelete}
+            title="Cancel Delete"
+          >
+            <FaTimes />
+          </Button>
+        </Stack>
+      );
+    }
+
     return (
       <Stack direction="row" gap="1">
         <Button
