@@ -10,7 +10,7 @@ import {
 export function Provider(props: ColorModeProviderProps) {
   return (
     <ChakraProvider value={system}>
-      <ColorModeProvider {...props} />
+      <ColorModeProvider {...props} forcedTheme="dark" />
     </ChakraProvider>
   )
 }

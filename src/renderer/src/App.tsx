@@ -53,7 +53,7 @@ function App(): React.JSX.Element {
   }, [])
   
   return (
-    <PatternBackground pattern='isometric' textAlign="center" justifyContent={'center'} h="100vh" display="flex" flexDirection="column" className="dark" overflowX={"hidden"}>
+    <PatternBackground pattern='isometric' textAlign="center" justifyContent={'center'} h="100vh" display="flex" flexDirection="column" overflowX={"hidden"}>
       <Toaster />
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
       
