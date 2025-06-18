@@ -3,16 +3,27 @@ import { accountsAtom } from "@renderer/Datastorage";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { VersionDisplay, useUpdateManager } from "./UpdateNotification";
 
 function Header() {
   const [isOverlayPaused, setIsOverlayPaused] = useState(false);
   const accounts = useAtomValue(accountsAtom);
-
   const [showAmount, setShowAmount] = useState(false);
+  
+  // Get update manager for hotkey functionality
+  const { handleCheckForUpdatesWithToast } = useUpdateManager();
 
   useHotkeys('ctrl+shift+a', () => {
     setShowAmount(!showAmount);
   }, [showAmount]);
+
+  // Hotkey for manual update check
+  useHotkeys('ctrl+shift+u', () => {
+    handleCheckForUpdatesWithToast();
+  }, {
+    enableOnFormTags: true,
+    preventDefault: true
+  });
 
   useEffect(() => {
     // Listen for overlay state changes from main process
@@ -26,7 +37,6 @@ function Header() {
       window.electron.ipcRenderer.removeListener('overlay-state-changed', handleOverlayStateChange);
     };
   }, []);
-
   return (
     <Box
       bg="riot.400"
@@ -37,9 +47,12 @@ function Header() {
       alignItems="center"
       boxShadow="md"
     >
-      <Text fontSize="xl" fontWeight="bold">
-        Shunpo - LoL Account Manager
-      </Text>
+      <Stack direction="row" align="center" gap="3">
+        <Text fontSize="xl" fontWeight="bold">
+          Shunpo
+        </Text>
+        <VersionDisplay />
+      </Stack>
       {showAmount && <Text>
         {accounts.length + " Acc(s)"}
       </Text>}

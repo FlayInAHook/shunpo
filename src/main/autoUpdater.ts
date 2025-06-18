@@ -1,5 +1,5 @@
 import { is } from '@electron-toolkit/utils';
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 
 class AutoUpdater {
@@ -14,11 +14,10 @@ class AutoUpdater {
   setMainWindow(window: BrowserWindow) {
     this.mainWindow = window;
   }
-
   private setupAutoUpdater() {
     // Configure auto-updater
-    autoUpdater.autoDownload = false; // Don't auto-download, ask user first
-    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.autoDownload = true; // Automatically download updates
+    autoUpdater.autoInstallOnAppQuit = false; // Do not auto-install on quit
 
     // Only check for updates in production
     if (is.dev) {
@@ -35,7 +34,7 @@ class AutoUpdater {
     autoUpdater.on('update-available', (info) => {
       console.log('Update available:', info);
       this.sendUpdateStatus('update-available', info);
-      this.showUpdateAvailableDialog(info);
+      // No dialog - just let it auto-download
     });
 
     autoUpdater.on('update-not-available', (info) => {
@@ -51,15 +50,12 @@ class AutoUpdater {
     autoUpdater.on('download-progress', (progressObj) => {
       console.log('Download progress:', progressObj);
       this.sendUpdateStatus('download-progress', progressObj);
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
+    });    autoUpdater.on('update-downloaded', (info) => {
       console.log('Update downloaded:', info);
       this.sendUpdateStatus('update-downloaded', info);
-      this.showUpdateReadyDialog(info);
+      // No dialog - just notify via status that update is ready
     });
   }
-
   private setupIpcHandlers() {
     ipcMain.handle('check-for-updates', async () => {
       if (is.dev) {
@@ -74,19 +70,6 @@ class AutoUpdater {
       }
     });
 
-    ipcMain.handle('download-update', async () => {
-      if (is.dev) {
-        return { message: 'Updates disabled in development mode' };
-      }
-      try {
-        await autoUpdater.downloadUpdate();
-        return { success: true };
-      } catch (error) {
-        console.error('Error downloading update:', error);
-        throw error;
-      }
-    });
-
     ipcMain.handle('install-update', () => {
       autoUpdater.quitAndInstall();
     });
@@ -95,58 +78,11 @@ class AutoUpdater {
       return app.getVersion();
     });
   }
-
   private sendUpdateStatus(status: string, data?: any) {
     if (this.mainWindow && this.mainWindow.webContents) {
       this.mainWindow.webContents.send('update-status', { status, data });
     }
   }
-
-  private async showUpdateAvailableDialog(info: any) {
-    if (!this.mainWindow) return;
-
-    const result = await dialog.showMessageBox(this.mainWindow, {
-      type: 'info',
-      title: 'Update Available',
-      message: `A new version (${info.version}) is available!`,
-      detail: `Current version: ${app.getVersion()}\nNew version: ${info.version}\n\nWould you like to download the update now?`,
-      buttons: ['Download Now', 'Download Later', 'Skip This Version'],
-      defaultId: 0,
-      cancelId: 1
-    });
-
-    switch (result.response) {
-      case 0: // Download Now
-        this.downloadUpdate();
-        break;
-      case 1: // Download Later
-        console.log('User chose to download later');
-        break;
-      case 2: // Skip This Version
-        console.log('User chose to skip this version');
-        // You could implement version skipping logic here
-        break;
-    }
-  }
-
-  private async showUpdateReadyDialog(info: any) {
-    if (!this.mainWindow) return;
-
-    const result = await dialog.showMessageBox(this.mainWindow, {
-      type: 'info',
-      title: 'Update Ready',
-      message: `Update (${info.version}) has been downloaded and is ready to install.`,
-      detail: 'The application will restart to apply the update. Any unsaved work should be saved before proceeding.',
-      buttons: ['Restart Now', 'Restart Later'],
-      defaultId: 0,
-      cancelId: 1
-    });
-
-    if (result.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
-  }
-
   async checkForUpdates(): Promise<void> {
     if (is.dev) {
       console.log('Auto-updater disabled in development mode');
@@ -157,19 +93,6 @@ class AutoUpdater {
       await autoUpdater.checkForUpdates();
     } catch (error) {
       console.error('Error checking for updates:', error);
-    }
-  }
-
-  async downloadUpdate(): Promise<void> {
-    if (is.dev) {
-      console.log('Auto-updater disabled in development mode');
-      return;
-    }
-
-    try {
-      await autoUpdater.downloadUpdate();
-    } catch (error) {
-      console.error('Error downloading update:', error);
     }
   }
 
