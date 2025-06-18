@@ -99,7 +99,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
               color={account.isPhoneVerified ? "green.500" : "red.500"}
               fontWeight="medium"
             >
-              {account.isPhoneVerified ? "✓ Verified" : "✗ Not Verified"}
+              {account.isPhoneVerified ? "✓☎ Verified" : "✗☎ Not Verified"}
             </Text>
           </Box>
         );
