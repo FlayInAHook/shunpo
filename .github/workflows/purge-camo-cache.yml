@@ -1,0 +1,27 @@
+name: Purge Camo Cache
+
+on:
+  # Trigger manually from GitHub Actions tab
+  workflow_dispatch:
+  
+  # Trigger when README.md is updated
+  push:
+    paths:
+      - 'README.md'
+      - 'resources/**'
+      - 'build/**'
+    branches:
+      - main
+      - master
+  
+  # Trigger on new releases to update download badges
+  release:
+    types: [published]
+
+jobs:
+  purge-cache:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Purge GitHub Camo Cache
+        uses: kevincobain2000/action-camo-purge@v1
