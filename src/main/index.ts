@@ -2,7 +2,6 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { OverlayController } from 'electron-overlay-window';
 import { existsSync, rmSync, writeFileSync } from 'fs';
-import { homedir } from 'os';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { appUpdater } from './autoUpdater';
@@ -43,7 +42,7 @@ function setAutoStartEnabled(enabled: boolean): void {
 // Cleanup function to remove config data
 function cleanupConfigData(): void {
   try {
-    const configDir = join(homedir(), '.shunpo');
+    const configDir = join(app.getPath('userData'), 'config');
     if (existsSync(configDir)) {
       rmSync(configDir, { recursive: true, force: true });
       console.log('Config data cleaned up successfully');
@@ -56,7 +55,7 @@ function cleanupConfigData(): void {
 // First run detection and default auto-start setup
 function setupDefaultAutoStart(): void {
   try {
-    const configDir = join(homedir(), '.shunpo');
+    const configDir = join(app.getPath('userData'), 'config');
     const configFile = join(configDir, 'config.json');
     console.log('Config directory:', configDir);
     
