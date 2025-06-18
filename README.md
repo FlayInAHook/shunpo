@@ -21,6 +21,8 @@
 - 🎨 **Integrated UI** - Clean, responsive interface overlayed directly on your league client
 - 🔄 **Auto-Start & Updates** - Automatic startup and updates make the usage frictionless
 
+![App Preview](resources/app_preview.png)
+
 ## Download
 
 [Shunpo can be downloaded from the latest release for Windows!](https://github.com/FlayInAHook/shunpo/releases)
