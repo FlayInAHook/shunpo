@@ -47,7 +47,7 @@ function Header() {
       alignItems="center"
       boxShadow="md"
     >
-      <Stack direction="row" align="center" gap="3">
+      <Stack direction="row" align="center" gap="10px">
         <Text fontSize="xl" fontWeight="bold">
           Shunpo
         </Text>

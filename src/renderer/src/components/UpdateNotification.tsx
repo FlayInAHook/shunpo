@@ -107,7 +107,7 @@ export const VersionDisplay: React.FC = () => {
 
   return (
     <>
-      <Text fontSize="sm" color="white">
+      <Text fontSize="xl" color="white" fontStyle="italic">
         v{appVersion}
       </Text>
       {isUpdateReadyToInstall && (
