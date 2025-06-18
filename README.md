@@ -27,7 +27,7 @@
 
 [Shunpo can be downloaded from the latest release for Windows!](https://github.com/FlayInAHook/shunpo/releases)
 
-### Development
+## Development
 
 ```bash
 set BUILD_TEST=true

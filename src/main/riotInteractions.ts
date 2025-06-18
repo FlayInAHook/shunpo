@@ -10,11 +10,12 @@ ipcMain.on("riotLogin", (_, username: string, password: string) => {
     try {
       console.log('Received ping from renderer process');
       lastUsername = username;
-      const controls = OverlayController.findEditControls();
-      console.log('Found Edit controls:', controls);
-      const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
-      const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
+      OverlayController.focusTarget();
       setTimeout(() => {
+        const controls = OverlayController.findEditControls();
+        console.log('Found Edit controls:', controls);
+        const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
+        const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
         const buttons = OverlayController.findButtonControls();
         const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
 
@@ -24,7 +25,6 @@ ipcMain.on("riotLogin", (_, username: string, password: string) => {
           startConnectionMonitoring();
         }
       }, 100);
-      
     } catch (error) {
       console.error('Error in IPC ping handler:', error);
     }
