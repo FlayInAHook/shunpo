@@ -69,7 +69,7 @@ function setupDefaultAutoStart(): void {
         setTimeout(() => {
           appIcon?.displayBalloon({
             iconType: 'info',
-            title: 'Riot Account Manager',
+            title: 'Shunpo - LoL Account Manager',
             content: 'Auto-start with Windows has been enabled by default. You can disable this in the tray menu.'
           })
         }, 3000); // Delay to ensure tray is created
@@ -305,8 +305,8 @@ app.whenReady().then(() => {
 
 function createTray(): void {
   appIcon = new Tray(icon)
-  appIcon.setToolTip('Riot Account Manager')
-  
+  appIcon.setToolTip('Shunpo - LoL Account Manager')
+
   const updateContextMenu = () => {
     const isAutoStartEnabled = getAutoStartEnabled();
     

@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.flayinahook.shunpo
 productName: Shunpo - LoL Account Manager
 directories:
   buildResources: build
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: lol-account-manager
+  executableName: shunpo-lol-account-manager
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
