@@ -6,7 +6,8 @@ import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { appUpdater } from './autoUpdater';
 import "./encrypt.ts";
-import "./riotInteractions.ts";
+import "./riotInteractions";
+import { writeToDebugLog } from './riotInteractions';
 
 let mainWindow: BrowserWindow | null = null
 let appIcon: Tray | null = null;
@@ -35,7 +36,7 @@ function getAutoStartEnabled(): boolean {
 function setAutoStartEnabled(enabled: boolean): void {
   app.setLoginItemSettings({
     openAtLogin: enabled,
-    openAsHidden: enabled, // Start minimized to tray when auto-started
+    args: ['--hidden']
   });
 }
 
@@ -85,6 +86,36 @@ function setupDefaultAutoStart(): void {
         autoStartEnabledByDefault: true,
         createdAt: new Date().toISOString()
       }, null, 2));
+    } else {
+      // Config file exists - check if it was created before the auto-start fix date
+      try {
+        const configData = JSON.parse(require('fs').readFileSync(configFile, 'utf8'));
+        const createdAt = new Date(configData.createdAt);
+        const fixDate = new Date('2025-07-12T00:00:00.000Z');
+        
+        // If config was created before the fix date, re-enable auto-start
+        if (createdAt < fixDate && process.platform === 'win32' && !is.dev) {
+          console.log('Config created before auto-start fix date, re-enabling auto-start');
+          setAutoStartEnabled(true);
+          
+          // Update the config file with new date to mark the fix as applied
+          configData.autoStartFixApplied = true;
+          configData.autoStartFixDate = new Date().toISOString();
+          
+          writeFileSync(configFile, JSON.stringify(configData, null, 2));
+          
+          // Show notification about auto-start being re-enabled
+          setTimeout(() => {
+            appIcon?.displayBalloon({
+              iconType: 'info',
+              title: 'Shunpo - LoL Account Manager',
+              content: 'Auto-start has been re-enabled due to a previous configuration issue.'
+            })
+          }, 3000); // Delay to ensure tray is created
+        }
+      } catch (parseError) {
+        console.error('Error parsing existing config file:', parseError);
+      }
     }
   } catch (error) {
     console.error('Error setting up default auto-start:', error);
@@ -94,27 +125,31 @@ function createWindow(showWindow: boolean = true): void {
   // Check if menubar and titlebar should be auto-hidden
   const shouldAutoHideMenuBar = !is.dev || process.env.BUILD_TEST === 'true';
   const shouldAttachOverlay = !is.dev || process.env.BUILD_TEST === 'true';
+
+  writeToDebugLog("Show window: " + showWindow);
   
   // Create the browser window.
-   mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: shouldAutoHideMenuBar,
     titleBarStyle: 'hidden', // Always use hidden - we'll manage custom title bar in React
-    ...(process.platform === 'linux' ? { icon } : {}),    webPreferences: {
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
 
   
+  
   if (showWindow) {
     console.log('Main window is ready to show')
     mainWindow!.show()
     mainWindow!.focus()
   } else {
-    mainWindow.minimize() // Start minimized to tray if auto-started
+    mainWindow.minimize()
   }
 
   // Send window state changes to renderer for custom title bar
@@ -181,7 +216,7 @@ function createWindow(showWindow: boolean = true): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.flayinahook.shunpo')
 
   // Setup default auto-start on first run
   setupDefaultAutoStart()

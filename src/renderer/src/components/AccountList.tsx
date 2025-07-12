@@ -95,6 +95,7 @@ function AccountList() {
             : account
         );
         setAccounts(updatedAccounts);
+        window.electron.ipcRenderer.send("debugLog", "Updated account data to: " + JSON.stringify(updatedAccounts, null, 2));
       }
     }
 

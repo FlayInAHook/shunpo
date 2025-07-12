@@ -1,6 +1,8 @@
+import { is } from "@electron-toolkit/utils";
 import { HasagiClient } from "@hasagi/core";
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, dialog, ipcMain } from "electron";
 import { OverlayController } from "electron-overlay-window";
+import fs from "fs";
 
 const client = new HasagiClient();
 let loginCheckInterval: NodeJS.Timeout | null = null;
@@ -21,7 +23,7 @@ ipcMain.on("riotLogin", (_, username: string, password: string) => {
 
         console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
         
-        if (inputEditSuccess && inputEditSuccess2 && buttonClickSuccess) {
+        if (is.dev || (inputEditSuccess && inputEditSuccess2 && buttonClickSuccess)) {
           startConnectionMonitoring();
         }
       }, 100);
@@ -101,7 +103,7 @@ async function gatherDataAndSendToRenderer() {
 async function connectToRiot() {
   if (!client.isConnected) {
     try {
-      await client.connect();
+      await client.connect({maxConnectionAttempts: 1, authenticationStrategy: "process"});
       console.log("Connected to Riot Client");
     } catch (error) {
       console.error("Failed to connect to Riot Client:", error);
@@ -182,7 +184,8 @@ function addListenersToRiotEvents() {
 
 function onGameFlowPhaseUpdate(event: any) {
   console.log("Gameflow phase changed:", event);
-  if (event.data == "None"){
+  writeToDebugLog(`Gameflow phase changed: ${JSON.stringify(event, null, 2)}`);
+  if (event.data == "None" || event.data == "Lobby" || event.data == "EndOfGame") {
     gatherDataAndSendToRenderer();
   }
 }
@@ -195,6 +198,39 @@ function onOwnedChampionsUpdate(_event: any) {
 
 function onPreShutdownBeginUpdate(event: any) {
   console.log("Pre-shutdown event received:", event);
+  writeToDebugLog(`Pre-shutdown event received: ${JSON.stringify(event, null, 2)}`);
   client.removeAllLCUEventListeners();
 }
 
+
+//write debug logs to a file
+ipcMain.on("debugLog", (_, message: string) => {
+  console.log("Debug log message received:", message);
+  //writeToDebugLog(message);
+});
+
+
+export function writeToDebugLog(message: string) {
+  
+  const logFilePath = 'shunpo_debug.log';
+  //showDialogOnMainWindow("Debug Log", `Writing to debug log: ${message}`);
+  
+  fs.appendFile(logFilePath, `${new Date().toISOString()} - ${message}\n`, (err: any) => {
+    if (err) {
+      console.error('Failed to write to debug log:', err);
+      //showDialogOnMainWindow("Debug Log Error", `Failed to write to debug log: ${JSON.stringify(err)}`);
+    } else {
+      console.log('Debug log updated:', message);
+    }
+  });
+}
+
+
+export function showDialogOnMainWindow(title: string, message: string) {
+  dialog.showMessageBox({
+    type: "info",
+    title: title,
+    message: message,
+    buttons: ["OK"]
+  });
+}
