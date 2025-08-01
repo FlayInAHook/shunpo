@@ -211,7 +211,7 @@ ipcMain.on("debugLog", (_, message: string) => {
 
 
 export function writeToDebugLog(message: string) {
-  
+  return;
   const logFilePath = 'shunpo_debug.log';
   //showDialogOnMainWindow("Debug Log", `Writing to debug log: ${message}`);
   
