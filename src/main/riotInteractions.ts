@@ -12,25 +12,63 @@ ipcMain.on("riotLogin", (_, username: string, password: string) => {
     try {
       console.log('Received ping from renderer process');
       lastUsername = username;
-      OverlayController.focusTarget();
-      setTimeout(() => {
-        const controls = OverlayController.findEditControls();
-        console.log('Found Edit controls:', controls);
-        const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
-        const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
-        const buttons = OverlayController.findButtonControls();
-        const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
-
-        console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
-        
-        if (is.dev || (inputEditSuccess && inputEditSuccess2 && buttonClickSuccess)) {
-          startConnectionMonitoring();
+      // First attempt with a short pre-delay, then retry once if needed
+      attemptLoginOnce(username, password, 100).then((firstOk) => {
+        if (!firstOk) {
+          console.warn('First login attempt failed, retrying once...');
+          setTimeout(() => {
+            attemptLoginOnce(username, password).then((secondOk) => {
+              if (!secondOk && !is.dev) {
+                console.error('Second login attempt failed.');
+              }
+            });
+          }, 300);
         }
-      }, 100);
+      });
     } catch (error) {
       console.error('Error in IPC ping handler:', error);
     }
 });
+
+function attemptOverlayLogin(username: string, password: string): boolean {
+  try {
+  // Ensure the overlay target has focus for this attempt
+    OverlayController.focusTarget();
+    const controls = OverlayController.findEditControls();
+    console.log('Found Edit controls:', controls);
+    const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
+    const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
+    const buttons = OverlayController.findButtonControls();
+    const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
+
+    console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
+    return !!(inputEditSuccess && inputEditSuccess2 && buttonClickSuccess);
+  } catch (err) {
+    console.error('Error during overlay login attempt:', err);
+    return false;
+  }
+}
+
+async function attemptLoginOnce(
+  username: string,
+  password: string,
+  preDelayMs: number = 0
+): Promise<boolean> {
+  try {
+    if (preDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, preDelayMs));
+    }
+    const success = attemptOverlayLogin(username, password);
+    if (is.dev || success) {
+      setTimeout(() => startConnectionMonitoring(), 10_000);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Error during login attempt flow:', err);
+    return false;
+  }
+}
 
 function startConnectionMonitoring() {
   // Clear existing interval if any
