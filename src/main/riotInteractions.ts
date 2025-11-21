@@ -38,8 +38,9 @@ function attemptOverlayLogin(username: string, password: string): boolean {
     console.log('Found Edit controls:', controls);
     const inputEditSuccess = OverlayController.inputTextToEdit(0, username);
     const inputEditSuccess2 = OverlayController.inputTextToEdit(1, password);
-    const buttons = OverlayController.findButtonControls();
-    const buttonClickSuccess = OverlayController.clickButton(buttons.count - 2);
+    const imageButtons = OverlayController.findButtonsWithImages();
+    console.log('Found Button controls:', imageButtons);
+    const buttonClickSuccess = OverlayController.clickButtonWithImage(imageButtons.count - 1)
 
     console.log('Input success:', inputEditSuccess, inputEditSuccess2, buttonClickSuccess);
     return !!(inputEditSuccess && inputEditSuccess2 && buttonClickSuccess);
@@ -60,7 +61,7 @@ async function attemptLoginOnce(
     }
     const success = attemptOverlayLogin(username, password);
     if (is.dev || success) {
-      setTimeout(() => startConnectionMonitoring(), 10_000);
+      setTimeout(() => startConnectionMonitoring(), 60_000);
       return true;
     }
     return false;
@@ -125,6 +126,7 @@ async function gatherDataAndSendToRenderer() {
         connected: true
       };
       console.log("Gathered Riot data:", data);
+      writeToDebugLog(`Gathered Riot data: ${JSON.stringify(data, null, 2)}`);
       mainWindow.webContents.send("riotDataUpdate", {
         ...data
       });
@@ -249,7 +251,7 @@ ipcMain.on("debugLog", (_, message: string) => {
 
 
 export function writeToDebugLog(message: string) {
-  return;
+  //return;
   const logFilePath = 'shunpo_debug.log';
   //showDialogOnMainWindow("Debug Log", `Writing to debug log: ${message}`);
   
