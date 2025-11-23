@@ -1,4 +1,4 @@
-import { Box, Stack, Switch, Text } from "@chakra-ui/react";
+import { Box, Button, Dialog, Stack, Switch, Text } from "@chakra-ui/react";
 import { accountsAtom } from "@renderer/Datastorage";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
@@ -11,7 +11,16 @@ function Header() {
   const [showAmount, setShowAmount] = useState(false);
   
   // Get update manager for hotkey functionality
-  const { handleCheckForUpdatesWithToast } = useUpdateManager();
+  const {
+    appVersion,
+    isUpdateReadyToInstall,
+    availableUpdateVersion,
+    isUpdateModalOpen,
+    handleCheckForUpdatesWithToast,
+    handleInstallUpdate,
+    dismissUpdateModal,
+    suppressUpdateForCurrentVersion,
+  } = useUpdateManager();
 
   useHotkeys('ctrl+shift+a', () => {
     setShowAmount(!showAmount);
@@ -38,7 +47,8 @@ function Header() {
     };
   }, []);
   return (
-    <Box
+    <>
+      <Box
       bg="riot.400"
       color="white"
       p="4"
@@ -51,7 +61,11 @@ function Header() {
         <Text fontSize="xl" fontWeight="bold">
           Shunpo
         </Text>
-        <VersionDisplay />
+        <VersionDisplay
+          appVersion={appVersion}
+          isUpdateReadyToInstall={isUpdateReadyToInstall}
+          onInstallUpdate={handleInstallUpdate}
+        />
       </Stack>
       {showAmount && <Text>
         {accounts.length + " Acc(s)"}
@@ -77,7 +91,53 @@ function Header() {
           </Switch.Label>
         </Switch.Root>
       </Stack>
-    </Box>
+      </Box>
+      <Dialog.Root
+        open={isUpdateModalOpen}
+        onOpenChange={(details) => {
+          if (!details.open) {
+            dismissUpdateModal();
+          }
+        }}
+        modal
+      >
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Update available</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <Text mb={2}>
+                {availableUpdateVersion ? `Version v${availableUpdateVersion} is ready to install.` : 'A new version is ready to install.'}
+              </Text>
+              {!isUpdateReadyToInstall && (
+                <Text color="gray.500" fontSize="sm">
+                  The update is still downloading. You can wait here or remind me later.
+                </Text>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer display="flex" gap="2">
+              <Button
+                colorScheme="green"
+                onClick={() => {
+                  void handleInstallUpdate();
+                }}
+                disabled={!isUpdateReadyToInstall}
+              >
+                Update now
+              </Button>
+              <Button variant="outline" onClick={dismissUpdateModal}>
+                Remind me later
+              </Button>
+              <Button variant="ghost" onClick={suppressUpdateForCurrentVersion}>
+                Don't show again
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
+    </>
   );
 }
 

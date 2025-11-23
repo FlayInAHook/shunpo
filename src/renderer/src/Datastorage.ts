@@ -62,4 +62,5 @@ type ColumnTypes = "summonerName" | "rank" | "isPhoneVerified" | "ownedChampions
 export const enabledColumnsAtom = atomWithStorage<ColumnTypes[]>("enabledColumns", ["summonerName", "rank", "isPhoneVerified", "ownedChampions"]);
 
 export const selectedChampionsAtom = atom<string[]>([]);
+export const dismissedUpdateVersionsAtom = atomWithStorage<string[]>("dismissedUpdateVersions", []);
 
