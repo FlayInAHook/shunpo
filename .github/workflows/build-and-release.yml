@@ -11,7 +11,9 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    # pinned: windows-latest's newer VS install isn't recognized by node-gyp@9.4.1
+    # (electron-overlay-window native build), see https://github.com/nodejs/node-gyp/issues
+    runs-on: windows-2022
 
     steps:
       - name: Checkout code
