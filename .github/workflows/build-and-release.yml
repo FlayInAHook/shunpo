@@ -24,6 +24,12 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup Python
+        # node-gyp@9.4.1's bundled gyp imports distutils, removed in Python 3.12+
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Install dependencies
         run: bun install
 
