@@ -73,5 +73,5 @@ export const enabledColumnsAtom = atomWithStorage<ColumnTypes[]>("enabledColumns
 
 export const selectedChampionsAtom = atom<string[]>([]);
 export const dismissedUpdateVersionsAtom = atomWithStorage<string[]>("dismissedUpdateVersions", []);
-export const lastSeenChangelogVersionAtom = atomWithStorage<string>("lastSeenChangelogVersion", "");
+export const lastSeenChangelogVersionAtom = atomWithStorage<string>("lastSeenChangelogVersion", "", undefined, { getOnInit: true });
 

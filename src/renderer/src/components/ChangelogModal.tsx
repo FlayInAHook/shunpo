@@ -1,6 +1,6 @@
-import { Box, Button, Dialog, Text } from "@chakra-ui/react";
+import { Box, Button, Dialog, Heading, List } from "@chakra-ui/react";
+import { changelog } from "@renderer/changelog";
 import { lastSeenChangelogVersionAtom } from "@renderer/Datastorage";
-import changelog from "../../../../CHANGELOG.md?raw";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 
@@ -25,15 +25,24 @@ function ChangelogModal() {
     <Dialog.Root open={open} onOpenChange={(details) => setOpen(details.open)} modal>
       <Dialog.Backdrop />
       <Dialog.Positioner>
-        <Dialog.Content>
+        <Dialog.Content textAlign="left">
           <Dialog.Header>
             <Dialog.Title>What&apos;s new</Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Box whiteSpace="pre-wrap" fontSize="sm" maxH="60vh" overflowY="auto">
-              <Text as="pre" whiteSpace="pre-wrap" fontFamily="inherit">
-                {changelog}
-              </Text>
+            <Box maxH="60vh" overflowY="auto">
+              {changelog.map((entry) => (
+                <Box key={entry.version} mb="4">
+                  <Heading size="sm" mb="1">
+                    v{entry.version}
+                  </Heading>
+                  <List.Root ps="4">
+                    {entry.changes.map((change) => (
+                      <List.Item key={change}>{change}</List.Item>
+                    ))}
+                  </List.Root>
+                </Box>
+              ))}
             </Box>
           </Dialog.Body>
           <Dialog.Footer>
