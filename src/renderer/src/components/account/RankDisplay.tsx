@@ -44,12 +44,15 @@ function getTierImage(tier: string): string {
 
 interface RankDisplayProps {
   rank: Account["rank"];
-  queueType?: "solo" | "flex";
+  queueType?: "solo" | "flex" | "ranked5s";
 }
 
 function RankDisplay({ rank, queueType }: RankDisplayProps) {
   function renderSingleRank(
-    rankData: NonNullable<Account["rank"]>["soloQueue"] | NonNullable<Account["rank"]>["flexQueue"],
+    rankData:
+      | NonNullable<Account["rank"]>["soloQueue"]
+      | NonNullable<Account["rank"]>["flexQueue"]
+      | NonNullable<Account["rank"]>["ranked5s"],
     queueLabel: string
   ) {
     if (!rankData) {
@@ -145,7 +148,7 @@ function RankDisplay({ rank, queueType }: RankDisplayProps) {
     );
   }
 
-  if (!rank || (!rank.soloQueue && !rank.flexQueue)) {
+  if (!rank || (!rank.soloQueue && !rank.flexQueue && !rank.ranked5s)) {
     return (
       <Tooltip content="Never logged in">
         <Box position="relative" display="inline-block">
@@ -190,11 +193,20 @@ function RankDisplay({ rank, queueType }: RankDisplayProps) {
     );
   }
 
-  // Default: show both queues side by side
+  if (queueType === "ranked5s") {
+    return (
+      <Box display="flex" justifyContent="center">
+        {renderSingleRank(rank.ranked5s, "Ranked 5s")}
+      </Box>
+    );
+  }
+
+  // Default: show all queues side by side
   return (
     <Stack direction="row" gap="2" alignItems="center">
       {renderSingleRank(rank.soloQueue, "Solo/Duo")}
       {renderSingleRank(rank.flexQueue, "Flex")}
+      {renderSingleRank(rank.ranked5s, "Ranked 5s")}
     </Stack>
   );
 }

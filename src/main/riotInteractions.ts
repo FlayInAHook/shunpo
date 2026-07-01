@@ -104,7 +104,7 @@ function startConnectionMonitoring() {
 async function gatherDataAndSendToRenderer() {
   try {
     const summonerInfo = await requestSummoner();
-    const [soloQueue, flexQueue] = await requestRank();
+    const [soloQueue, flexQueue, ranked5s] = await requestRank();
     const isPhoneVerified = await requestPhoneVerification();
     const ownedChampions = await requestOwnedChampions();
     addListenersToRiotEvents();
@@ -118,7 +118,8 @@ async function gatherDataAndSendToRenderer() {
         summonerName: summonerInfo.gameName,
         rankInfo: {
           soloQueue,
-          flexQueue
+          flexQueue,
+          ranked5s
         },
         summonerInfo,
         isPhoneVerified,
@@ -170,8 +171,10 @@ async function requestRank() {
 
   const soloQueue = response.queues.find((queue) => queue.queueType === "RANKED_SOLO_5x5");
   const flexQueue = response.queues.find((queue) => queue.queueType === "RANKED_FLEX_SR");
+  // ponytail: @hasagi/core's LolRankedLeagueQueueType union predates this queue, cast the runtime string
+  const ranked5s = response.queues.find((queue) => (queue.queueType as string) === "RANKED_PREMADE_5x5");
 
-  return [soloQueue, flexQueue];
+  return [soloQueue, flexQueue, ranked5s];
 }
 
 async function requestPhoneVerification() {

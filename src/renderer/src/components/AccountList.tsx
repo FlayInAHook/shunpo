@@ -18,7 +18,7 @@ import {
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { accountsAtom, selectedChampionsAtom } from "../Datastorage";
-import { AccountListControls, getFlexQueueSortValue, getSoloQueueSortValue, SortableAccountRow } from "./account";
+import { AccountListControls, getFlexQueueSortValue, getRanked5sSortValue, getSoloQueueSortValue, SortableAccountRow } from "./account";
 import AddAccountInline from "./AddAccountInline";
 
 const restrictToHorizontalAxis: Modifier = ({ transform }) => {
@@ -30,7 +30,7 @@ const restrictToHorizontalAxis: Modifier = ({ transform }) => {
 
 function AccountList() {
   const [accounts, setAccounts] = useAtom(accountsAtom);
-  const [sortMode, setSortMode] = useState<"none" | "solo" | "flex">("none");
+  const [sortMode, setSortMode] = useState<"none" | "solo" | "flex" | "ranked5s">("none");
   const selectedChampions = useAtomValue(selectedChampionsAtom);
 
   const sensors = useSensors(
@@ -49,6 +49,11 @@ function AccountList() {
     if (sortMode === "flex") {
       return [...accounts].sort(
         (a, b) => getFlexQueueSortValue(b) - getFlexQueueSortValue(a)
+      );
+    }
+    if (sortMode === "ranked5s") {
+      return [...accounts].sort(
+        (a, b) => getRanked5sSortValue(b) - getRanked5sSortValue(a)
       );
     }
     return accounts;
@@ -73,7 +78,7 @@ function AccountList() {
 
   function toggleSortMode() {
     const nextMode =
-      sortMode === "none" ? "solo" : sortMode === "solo" ? "flex" : "none";
+      sortMode === "none" ? "solo" : sortMode === "solo" ? "flex" : sortMode === "flex" ? "ranked5s" : "none";
     setSortMode(nextMode);
   }
 

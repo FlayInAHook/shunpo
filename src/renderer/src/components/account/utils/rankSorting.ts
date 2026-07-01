@@ -23,10 +23,9 @@ const DIVISION_ORDER = {
   NA: 0,
 };
 
-function getSoloQueueSortValue(account: Account): number {
-  if (!account.rank?.soloQueue) return RANK_ORDER.NONE;
+function getQueueSortValue(rankData: NonNullable<Account["rank"]>["soloQueue"]): number {
+  if (!rankData) return RANK_ORDER.NONE;
 
-  const rankData = account.rank.soloQueue;
   const tierValue =
     RANK_ORDER[rankData.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
   const divisionValue =
@@ -36,18 +35,9 @@ function getSoloQueueSortValue(account: Account): number {
   return tierValue * 10000 + divisionValue * 1000 + lpValue;
 }
 
-function getFlexQueueSortValue(account: Account): number {
-  if (!account.rank?.flexQueue) return RANK_ORDER.NONE;
+const getSoloQueueSortValue = (account: Account): number => getQueueSortValue(account.rank?.soloQueue);
+const getFlexQueueSortValue = (account: Account): number => getQueueSortValue(account.rank?.flexQueue);
+const getRanked5sSortValue = (account: Account): number => getQueueSortValue(account.rank?.ranked5s);
 
-  const rankData = account.rank.flexQueue;
-  const tierValue =
-    RANK_ORDER[rankData.tier as keyof typeof RANK_ORDER] || RANK_ORDER.NONE;
-  const divisionValue =
-    DIVISION_ORDER[rankData.division as keyof typeof DIVISION_ORDER] || 0;
-  const lpValue = rankData.leaguePoints || 0;
-
-  return tierValue * 10000 + divisionValue * 1000 + lpValue;
-}
-
-export { getFlexQueueSortValue, getSoloQueueSortValue };
+export { getFlexQueueSortValue, getRanked5sSortValue, getSoloQueueSortValue };
 

@@ -21,6 +21,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editUsername, setEditUsername] = useState(account.username);
   const [editPassword, setEditPassword] = useState(account.password);
+  const [editDisplayName, setEditDisplayName] = useState(account.displayName ?? "");
   const [isRedacted, setIsRedacted] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -48,10 +49,10 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
 
   function handleSave() {
     const updatedAccount: Account = {
+      ...account,
       username: editUsername,
       password: editPassword,
-      summonerName: account.summonerName,
-      rank: account.rank,
+      displayName: editDisplayName.trim() || undefined,
     };
 
     const updatedAccounts = [...accounts];
@@ -63,6 +64,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
   function handleCancel() {
     setEditUsername(account.username);
     setEditPassword(account.password);
+    setEditDisplayName(account.displayName ?? "");
     setIsEditing(false);
   }
   function handleDelete() {
@@ -85,7 +87,7 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
         return (
           <Box display="flex" justifyContent="center">
             <Text fontWeight="medium">
-              {isRedacted ? "**********" : account.summonerName || account.username}
+              {isRedacted ? "**********" : account.displayName || account.summonerName || account.username}
             </Text>
           </Box>
         );
@@ -204,13 +206,20 @@ function AccountRow({ account, index, dragHandleProps }: AccountRowProps) {
   if (isEditing) {
     return (
       <Grid
-        templateColumns="1fr 1fr auto"
+        templateColumns="1fr 1fr 1fr auto"
         gap="3"
         p="3"
         //bg="gray.50"
         //_dark={{ bg: "gray.700/50" }}
         borderRadius="md"
       >
+        <Input
+          value={editDisplayName}
+          onChange={(e) => setEditDisplayName(e.target.value)}
+          placeholder="Display name (optional)"
+          size="sm"
+          colorPalette="riot"
+        />
         <Input
           value={editUsername}
           onChange={(e) => setEditUsername(e.target.value)}

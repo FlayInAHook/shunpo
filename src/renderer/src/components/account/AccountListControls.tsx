@@ -6,7 +6,7 @@ import { FaCog, FaSort, FaSortAmountDown } from "react-icons/fa";
 import { accountsAtom, enabledColumnsAtom, selectedChampionsAtom } from "../../Datastorage";
 
 interface AccountListControlsProps {
-  sortMode: "none" | "solo" | "flex";
+  sortMode: "none" | "solo" | "flex" | "ranked5s";
   onToggleSortMode: () => void;
 }
 
@@ -168,6 +168,8 @@ function AccountListControls({ sortMode, onToggleSortMode }: AccountListControls
           ? "Sorted by Solo Queue"
           : sortMode === "flex"
           ? "Sorted by Flex Queue"
+          : sortMode === "ranked5s"
+          ? "Sorted by Ranked 5s"
           : "Sort by Rank"}
       </Button>
     </Box>

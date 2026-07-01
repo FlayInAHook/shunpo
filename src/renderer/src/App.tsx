@@ -1,6 +1,7 @@
 import { Box, Container, Stack } from '@chakra-ui/react'
 import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
+import ChangelogModal from './components/ChangelogModal'
 import CustomTitleBar from './components/CustomTitleBar'
 import Header from './components/Header'
 import PatternBackground from './components/PatternBackground'
@@ -55,6 +56,7 @@ function App(): React.JSX.Element {
   return (
     <PatternBackground pattern='isometric' textAlign="center" justifyContent={'center'} h="100vh" display="flex" flexDirection="column" overflowX={"hidden"}>
       <Toaster />
+      <ChangelogModal />
       <style>{colorMode === "light" ? lightScrollbar : darkScrollbar}</style>
       
       <CustomTitleBar visible={isOverlayPaused} />

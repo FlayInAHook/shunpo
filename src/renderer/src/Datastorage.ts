@@ -5,6 +5,7 @@ import { atomWithStorage } from "jotai/utils";
 export type Account = {
   username: string;
   password: string;
+  displayName?: string;
   summonerName?: string;
   rank?: {
     soloQueue?: {
@@ -17,6 +18,15 @@ export type Account = {
       previousSeasonEndDivision?: string;
     } | null;
     flexQueue?: {
+      tier: string;
+      division: string;
+      leaguePoints: number;
+      wins: number;
+      losses: number;
+      previousSeasonEndTier?: string;
+      previousSeasonEndDivision?: string;
+    } | null;
+    ranked5s?: {
       tier: string;
       division: string;
       leaguePoints: number;
@@ -63,4 +73,5 @@ export const enabledColumnsAtom = atomWithStorage<ColumnTypes[]>("enabledColumns
 
 export const selectedChampionsAtom = atom<string[]>([]);
 export const dismissedUpdateVersionsAtom = atomWithStorage<string[]>("dismissedUpdateVersions", []);
+export const lastSeenChangelogVersionAtom = atomWithStorage<string>("lastSeenChangelogVersion", "");
 
