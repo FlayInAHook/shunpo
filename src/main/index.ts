@@ -1,3 +1,4 @@
+import "./debugLog"; // patches console before anything else logs
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { OverlayController } from 'electron-overlay-window';
@@ -5,9 +6,9 @@ import { existsSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { appUpdater } from './autoUpdater';
+import { attachRendererLogging } from './debugLog';
 import "./encrypt.ts";
 import "./riotInteractions";
-import { writeToDebugLog } from './riotInteractions';
 
 let mainWindow: BrowserWindow | null = null
 let appIcon: Tray | null = null;
@@ -126,7 +127,7 @@ function createWindow(showWindow: boolean = true): void {
   const shouldAutoHideMenuBar = !is.dev || process.env.BUILD_TEST === 'true';
   const shouldAttachOverlay = !is.dev || process.env.BUILD_TEST === 'true';
 
-  writeToDebugLog("Show window: " + showWindow);
+  console.log("Show window:", showWindow);
   
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -142,7 +143,9 @@ function createWindow(showWindow: boolean = true): void {
     }
   })
 
-  
+  attachRendererLogging(mainWindow.webContents)
+
+
   
   if (showWindow) {
     console.log('Main window is ready to show')

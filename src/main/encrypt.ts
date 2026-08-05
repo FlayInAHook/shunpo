@@ -6,7 +6,7 @@ ipcMain.handle("encryptString", (_, args) => {
 });
 
 ipcMain.handle("decryptString", (_, args) => {
-    console.log("decry", args)
+    console.log("decry") // ponytail: don't log the ciphertext, it's binary noise in the debug log
     let decryptedBuffer;
     try {
       decryptedBuffer = safeStorage.decryptString(Buffer.from(args, 'binary'));

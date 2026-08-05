@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import AccountList from './components/AccountList'
 import ChangelogModal from './components/ChangelogModal'
 import CustomTitleBar from './components/CustomTitleBar'
+import DebugLogToggle from './components/DebugLogToggle'
 import Header from './components/Header'
 import PatternBackground from './components/PatternBackground'
 import { useColorMode } from './components/ui/color-mode'
@@ -74,6 +75,7 @@ function App(): React.JSX.Element {
       
       <Box ref={footerRef}>
         {/*<Footer />*/}
+        <DebugLogToggle />
       </Box>
     </PatternBackground>
   )

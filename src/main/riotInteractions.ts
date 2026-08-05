@@ -2,7 +2,6 @@ import { is } from "@electron-toolkit/utils";
 import { HasagiClient } from "@hasagi/core";
 import { BrowserWindow, dialog, ipcMain } from "electron";
 import { OverlayController } from "electron-overlay-window";
-import fs from "fs";
 
 const client = new HasagiClient();
 let loginCheckInterval: NodeJS.Timeout | null = null;
@@ -127,7 +126,6 @@ async function gatherDataAndSendToRenderer() {
         connected: true
       };
       console.log("Gathered Riot data:", data);
-      writeToDebugLog(`Gathered Riot data: ${JSON.stringify(data, null, 2)}`);
       mainWindow.webContents.send("riotDataUpdate", {
         ...data
       });
@@ -188,7 +186,8 @@ async function requestOwnedChampions() {
   if (!client.isConnected) await client.connect();
   const response = await client.request("get", "/lol-champions/v1/owned-champions-minimal");
 
-  const champions = response.map((champion) => champion.name);
+  // "Jade_" aliases are the classic-skin variants Riot grants everyone, not real owned champions
+  const champions = response.filter((champion) => !champion.alias?.startsWith("Jade_")).map((champion) => champion.name);
   return champions;
 }
 
@@ -227,7 +226,6 @@ function addListenersToRiotEvents() {
 
 function onGameFlowPhaseUpdate(event: any) {
   console.log("Gameflow phase changed:", event);
-  writeToDebugLog(`Gameflow phase changed: ${JSON.stringify(event, null, 2)}`);
   if (event.data == "None" || event.data == "Lobby" || event.data == "EndOfGame") {
     gatherDataAndSendToRenderer();
   }
@@ -241,31 +239,7 @@ function onOwnedChampionsUpdate(_event: any) {
 
 function onPreShutdownBeginUpdate(event: any) {
   console.log("Pre-shutdown event received:", event);
-  writeToDebugLog(`Pre-shutdown event received: ${JSON.stringify(event, null, 2)}`);
   client.removeAllLCUEventListeners();
-}
-
-
-//write debug logs to a file
-ipcMain.on("debugLog", (_, message: string) => {
-  console.log("Debug log message received:", message);
-  //writeToDebugLog(message);
-});
-
-
-export function writeToDebugLog(message: string) {
-  return;
-  const logFilePath = 'shunpo_debug.log';
-  //showDialogOnMainWindow("Debug Log", `Writing to debug log: ${message}`);
-  
-  fs.appendFile(logFilePath, `${new Date().toISOString()} - ${message}\n`, (err: any) => {
-    if (err) {
-      console.error('Failed to write to debug log:', err);
-      //showDialogOnMainWindow("Debug Log Error", `Failed to write to debug log: ${JSON.stringify(err)}`);
-    } else {
-      console.log('Debug log updated:', message);
-    }
-  });
 }
 
 
