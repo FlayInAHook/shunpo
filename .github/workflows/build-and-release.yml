@@ -11,9 +11,7 @@ on:
 
 jobs:
   build:
-    # pinned: windows-latest's newer VS install isn't recognized by node-gyp@9.4.1
-    # (electron-overlay-window native build), see https://github.com/nodejs/node-gyp/issues
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -24,13 +22,9 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Setup Python
-        # node-gyp@9.4.1's bundled gyp imports distutils, removed in Python 3.12+
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Install dependencies
+        # postinstall builds the native/ addon with node-gyp (needs Python + MSVC,
+        # both preinstalled on the Windows runners)
         run: bun install
 
       - name: Build Electron app (Windows)

@@ -29,6 +29,10 @@ bun run build
 bun run build:win        # full Windows installer via electron-builder
 bun run build:unpack     # build without packaging into an installer, for quick manual testing
 
+# Rebuild the native overlay addon (also runs on postinstall). Needed after editing native/
+bun run build:native
+node native/smoke-test.js     # asserts the addon loads and the win32 hook runs
+
 # Regenerate Chakra UI theme types after editing src/renderer/src/theme/theme.ts
 bun run generate:theme
 ```
@@ -39,9 +43,10 @@ There is no test suite/framework configured in this repo.
 
 Standard electron-vite three-process layout (`electron.vite.config.ts`), but the important behavior lives in how the processes cooperate:
 
-- `src/main/index.ts` — app lifecycle, tray, single-instance lock, auto-start-with-Windows, and the overlay window setup. On startup it attaches the main `BrowserWindow` to the actual **"Riot Client"** OS window using `electron-overlay-window` (a custom fork: `electron-overlay-window-margin`, see `dependencies` in package.json), so Shunpo's UI is visually pinned on top of the Riot Client rather than being a separate window. `pauseOverlayAttach`/`resumeOverlayAttach` IPC channels let the renderer temporarily detach (e.g. to show a normal window) and reattach.
+- `src/main/index.ts` — app lifecycle, tray, single-instance lock, auto-start-with-Windows, and the overlay window setup. On startup it attaches the main `BrowserWindow` to the actual **"Riot Client"** OS window using `OverlayController` (`src/main/overlay.ts`), so Shunpo's UI is visually pinned on top of the Riot Client rather than being a separate window. `pauseOverlayAttach`/`resumeOverlayAttach` IPC channels let the renderer temporarily detach (e.g. to show a normal window) and reattach.
+- `src/main/overlay.ts` + `native/` — the overlay itself, vendored from `electron-overlay-window` and cut down to Windows and to the API this app calls. `native/` is a small N-API addon (win32 `SetWinEventHook` for tracking the target window, UI Automation for reading/driving its controls); `overlay.ts` is the TS wrapper that mirrors the target's bounds onto the `BrowserWindow` and handles show/hide on focus, plus `pause`/`resume`. The addon is compiled by `bun run build:native` (which `postinstall` runs) into `resources/overlay_window.node`, which `overlay.ts` loads by path — it is kept out of the asar via `asarUnpack` in electron-builder.yml. Rebuild it after touching anything in `native/`; electron-vite does not.
 - `src/main/riotInteractions.ts` — the core account-switching logic, in two parts:
-  1. **Login automation**: `riotLogin` IPC drives the Riot Client's *own* login form using low-level win32 UI automation via `OverlayController` (`findEditControls`, `inputTextToEdit`, `findButtonsWithImages`, `clickButtonWithImage`) — this types into and clicks the real client UI, it does not call a Riot auth API. It retries once on failure.
+  1. **Login automation**: `riotLogin` IPC drives the Riot Client's *own* login form using low-level win32 UI automation via `OverlayController` (`findEditControls`, `inputTextToEdit`, `findButtonsWithImages`, `clickButtonWithImage`, see `src/main/overlay.ts`) — this types into and clicks the real client UI, it does not call a Riot auth API. It retries once on failure.
   2. **Data gathering**: after a successful login it polls until the LCU is reachable (`HasagiClient` from `@hasagi/core`), then fetches summoner info, ranked stats, phone verification, and owned champions, and pushes them to the renderer via the `riotDataUpdate` IPC event keyed by username. It also subscribes to LCU websocket events (gameflow phase changes, owned-champions updates) to refresh this data live without the user re-triggering anything.
 - `src/main/encrypt.ts` — `encryptString`/`decryptString` IPC handlers wrapping Electron's `safeStorage`. This is how account passwords are protected at rest.
 - `src/main/autoUpdater.ts` — wraps `electron-updater`, exposes `check-for-updates`/`install-update`/`get-app-version` IPC, and pushes progress via an `update-status` event. Disabled entirely in dev.

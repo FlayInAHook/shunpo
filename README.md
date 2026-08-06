@@ -67,7 +67,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Credits
 
 - **LCU API**: [hasagi-core](https://github.com/dysolix/hasagi-core) - League Client Update API integration
-- **Original Overlay**: [electron-overlay-window](https://github.com/SnosMe/electron-overlay-window) - Base overlay implementation
+- **Original Overlay**: [electron-overlay-window](https://github.com/SnosMe/electron-overlay-window) - the basis for the bundled native overlay addon in [`native/`](native/)
 
 ---
 

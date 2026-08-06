@@ -1,7 +1,7 @@
 import { is } from "@electron-toolkit/utils";
 import { HasagiClient } from "@hasagi/core";
 import { BrowserWindow, dialog, ipcMain } from "electron";
-import { OverlayController } from "electron-overlay-window";
+import { OverlayController } from "./overlay";
 
 const client = new HasagiClient();
 let loginCheckInterval: NodeJS.Timeout | null = null;

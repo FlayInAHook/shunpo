@@ -1,7 +1,7 @@
 import "./debugLog"; // patches console before anything else logs
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
-import { OverlayController } from 'electron-overlay-window';
+import { OverlayController } from './overlay';
 import { existsSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
@@ -199,12 +199,10 @@ function createWindow(showWindow: boolean = true): void {
       mainWindow!,
       'Riot Client',
       {
-        hasTitleBarOnMac: true,
         marginPercent: {
           top: 25,
           left: 50,
-        },
-        selfHandleClickable: true
+        }
       }
     )
   }
